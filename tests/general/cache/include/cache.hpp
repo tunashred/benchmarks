@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+constexpr size_t CACHE_LINE = 64;
+
 template <typename T>
 class CArray : public testing::TestWithParam<size_t> {
 protected:
