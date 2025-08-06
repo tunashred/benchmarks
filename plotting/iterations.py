@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-# Raw benchmark data manually extracted from the logs
+# Data extracted from the GTest logs
 raw_data = {
     "int": {
         "Sequential": [
@@ -44,7 +44,6 @@ raw_data = {
     }
 }
 
-# Plotting
 def plot_benchmarks(data):
     for dtype, modes in data.items():
         plt.figure(figsize=(10, 6))
