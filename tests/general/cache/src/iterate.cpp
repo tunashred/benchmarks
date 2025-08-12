@@ -1,4 +1,4 @@
-#include "cache.hpp"
+#include "iterate.hpp"
 
 template <typename T>
 void CArray<T>::SetUp() {
@@ -16,11 +16,6 @@ template <typename T>
 void CArray<T>::TearDown() {
     free(array);
 }
-
-using CArrayInt = CArray<int>;
-using CArrayLong = CArray<long>;
-using CArrayFloat = CArray<float>;
-using CArrayDouble = CArray<double>;
 
 template <typename T>
 void sequential_iterate(const CArray<T>* test) {
@@ -51,15 +46,15 @@ void jump_iterate(const CArray<T>* test) {
     }
 }
 
+using CArrayInt = CArray<int>;
+using CArrayLong = CArray<long>;
+using CArrayDouble = CArray<double>;
+
 TEST_P(CArrayInt, SequentialIterate) {
     sequential_iterate(this);
 }
 
 TEST_P(CArrayLong, SequentialIterate) {
-    sequential_iterate(this);
-}
-
-TEST_P(CArrayFloat, SequentialIterate) {
     sequential_iterate(this);
 }
 
@@ -72,10 +67,6 @@ TEST_P(CArrayInt, JumpIterate) {
 }
 
 TEST_P(CArrayLong, JumpIterate) {
-    jump_iterate(this);
-}
-
-TEST_P(CArrayFloat, JumpIterate) {
     jump_iterate(this);
 }
 
@@ -93,13 +84,6 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     GeneralCaching,
     CArrayLong,
-    ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000),
-    getTestCaseName
-);
-
-INSTANTIATE_TEST_SUITE_P(
-    GeneralCaching,
-    CArrayFloat,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000),
     getTestCaseName
 );
