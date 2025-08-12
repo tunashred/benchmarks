@@ -2,8 +2,6 @@
 
 #include <gtest/gtest.h>
 
-constexpr size_t BLOCK_SIZE = 64;
-
 template <typename T>
 class CMatrix : public testing::TestWithParam<size_t> {
 protected:
@@ -18,8 +16,6 @@ public:
     void naive_mul();
 
     void optimized_mul();
-
-    void block_mul();
 
     static std::string getTestCaseName(const ::testing::TestParamInfo<size_t>& info) {
         return "size_" + std::to_string(info.param) + "x" + std::to_string(info.param);

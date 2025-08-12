@@ -68,26 +68,6 @@ void CMatrix<T>::optimized_mul() {
     }
 }
 
-template <typename T>
-void CMatrix<T>::block_mul() {
-    size_t size = this->GetParam();
-
-    for (size_t ii = 0; ii < size; ii += BLOCK_SIZE) {
-        for (size_t jj = 0; jj < size; jj += BLOCK_SIZE) {
-            for (size_t kk = 0; kk < size; kk += BLOCK_SIZE) {
-                // Multiply the blocks
-                for (size_t i = ii; i < ii + BLOCK_SIZE && i < size; i++) {
-                    for (size_t k = kk; k < kk + BLOCK_SIZE && k < size; k++) {
-                        for (size_t j = jj; j < jj + BLOCK_SIZE && j < size; j++) {
-                            matrix_C[i][j] += matrix_A[i][k] * matrix_B[k][j];
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 using CMatrixInt = CMatrix<int>;
 using CMatrixLong = CMatrix<long>;
 using CMatrixDouble = CMatrix<double>;
@@ -114,18 +94,6 @@ TEST_P(CMatrixLong, OptimizedMul) {
 
 TEST_P(CMatrixDouble, OptimizedMul) {
     optimized_mul();
-}
-
-TEST_P(CMatrixInt, BlockMul) {
-    block_mul();
-}
-
-TEST_P(CMatrixLong, BlockMul) {
-    block_mul();
-}
-
-TEST_P(CMatrixDouble, BlockMul) {
-    block_mul();
 }
 
 INSTANTIATE_TEST_SUITE_P(
