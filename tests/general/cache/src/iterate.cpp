@@ -1,11 +1,12 @@
 #include "iterate.hpp"
+#include "utils/utils.hpp"
 
 template <typename T>
 void CArray<T>::SetUp() {
     size_t size = this->GetParam();
     size_t totalSize = size * sizeof *array;
 
-    array = (T*) malloc(totalSize);
+    array = (T*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << size;
 
     // warming up the memory
