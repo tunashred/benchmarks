@@ -301,7 +301,7 @@ def plot_combined(data, mode):
     plt.grid(True, which="minor", linestyle=':', linewidth=0.3, alpha=0.4)
     plt.legend(fontsize=11)
     plt.tight_layout()
-    plt.savefig(f"benchmark_all_{mode.lower()}.png", dpi=300, bbox_inches='tight')
+    # plt.savefig(f"benchmark_all_{mode.lower()}.png", dpi=300, bbox_inches='tight')
     plt.show()
 
 
