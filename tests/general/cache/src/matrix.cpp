@@ -1,19 +1,15 @@
-#include "matrix.hpp"
+#include "singlecore/matrix.hpp"
 #include "utils/utils.hpp"
 
 template <typename T>
 void create_matrix(T**& matrix, size_t size) {
     size_t rowSize = size * sizeof(T);
 
-    try {
-        matrix = (T**) safe_malloc(size * sizeof(T*));
-    
-        for (size_t i = 0; i < size; i++) {
-            matrix[i] = (T*) safe_malloc(rowSize);
-            memset(matrix[i], 3, rowSize);
-        }
-    } catch (const std::bad_alloc& e) {
-        std::cout << "Allocation failed: " << e.what() << '\n';
+    matrix = (T**) safe_malloc(size * sizeof(T*));
+
+    for (size_t i = 0; i < size; i++) {
+        matrix[i] = (T*) safe_malloc(rowSize);
+        memset(matrix[i], 3, rowSize);
     }
 }
 
@@ -21,9 +17,9 @@ template <typename T>
 void CMatrix<T>::SetUp() {
     size_t size = this->GetParam();
 
-    create_matrix(matrix_A, size);
-    create_matrix(matrix_B, size);
-    create_matrix(matrix_C, size);
+    ASSERT_NO_THROW(create_matrix(matrix_A, size));
+    ASSERT_NO_THROW(create_matrix(matrix_B, size));
+    ASSERT_NO_THROW(create_matrix(matrix_C, size));
 }
 
 void free_matrix(void**& matrix, size_t size) {
