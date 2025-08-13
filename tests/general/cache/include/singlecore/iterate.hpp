@@ -12,9 +12,9 @@ protected:
     void TearDown() override;
 public:
     T* array;
+
+    static std::string getTestCaseName(const ::testing::TestParamInfo<size_t>& info) {
+        return "size_" + std::to_string(info.param);
+    }
 };
 
-// TODO: move this as static member method
-std::string getTestCaseName(const ::testing::TestParamInfo<size_t>& info) {
-    return "size_" + std::to_string(info.param);
-}

@@ -1,4 +1,4 @@
-#include "iterate.hpp"
+#include "singlecore/iterate.hpp"
 #include "utils/utils.hpp"
 
 template <typename T>
@@ -79,19 +79,19 @@ INSTANTIATE_TEST_SUITE_P(
     GeneralCaching,
     CArrayInt,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000),
-    getTestCaseName
+    CArrayInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     GeneralCaching,
     CArrayLong,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000),
-    getTestCaseName
+    CArrayLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     GeneralCaching,
     CArrayDouble,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000),
-    getTestCaseName
+    CArrayDouble::getTestCaseName
 );
