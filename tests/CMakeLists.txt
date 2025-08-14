@@ -8,12 +8,14 @@ set(EXECUTABLE "benchmarks")
 add_executable(${EXECUTABLE} ${C_SOURCES})
 
 target_compile_options(${EXECUTABLE} PRIVATE ${COMPILE_FLAGS})
+
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     target_link_options(${EXECUTABLE} PRIVATE -fsanitize=address)
 endif()
 
 target_include_directories(${EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/general/cache/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
 
@@ -29,4 +31,5 @@ target_link_libraries(${EXECUTABLE}
 gtest_discover_tests(${EXECUTABLE} DISCOVERY_TIMEOUT 10)
 
 add_subdirectory(general)
+add_subdirectory(multithreaded)
 add_subdirectory(utils)
