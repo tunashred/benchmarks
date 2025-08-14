@@ -21,7 +21,7 @@ void CArray<T>::TearDown() {
 template <typename T>
 void sequential_iterate(const CArray<T>* test) {
     size_t size = test->GetParam();
-    for (size_t i = 0; i < 200000; i++) {
+    for (size_t i = 0; i < LOOP_COUNT; i++) {
         for (size_t j = 0; j < size; j++) {
             test->array[j]++;
         }
@@ -35,7 +35,7 @@ void jump_iterate(const CArray<T>* test) {
     
     size_t size = test->GetParam();
     
-    for (size_t i = 0; i < 200000; i++) {
+    for (size_t i = 0; i < LOOP_COUNT; i++) {
         for (size_t k = 0; k < jump_size; k++) {
             size_t j = k;
             while (j < size) {
