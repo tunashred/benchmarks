@@ -20,8 +20,8 @@ protected:
 public:
     T* array;
     std::vector<std::thread> threads;
-    
-    void runTest(iterate_function<T> iterate, size_t totalSize, size_t numThreads);
+
+    void runTest(iterate_function<T> iterate);
 
     static std::string getTestCaseName(const ::testing::TestParamInfo<std::tuple<size_t, size_t>>& info) {
         size_t totalSize, numThreads;

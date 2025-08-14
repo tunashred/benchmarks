@@ -4,9 +4,8 @@
 
 template <typename T>
 void CArrayShared<T>::SetUp() {
-    // TODO: revisit this
-    size_t size, _;
-    std::tie(size, _) = this->GetParam();
+    size_t size;
+    std::tie(size, std::ignore) = this->GetParam();
     size_t totalSize = size * sizeof *array;
 
     array = (T*) safe_malloc(totalSize);
@@ -75,7 +74,10 @@ void reverse_jump_iterate(size_t start, size_t end, const CArrayShared<T>* test)
 }
 
 template <typename T>
-void CArrayShared<T>::runTest(iterate_function<T> iterate, size_t totalSize, size_t numThreads) {
+void CArrayShared<T>::runTest(iterate_function<T> iterate) {
+    size_t totalSize, numThreads;
+    std::tie(totalSize, numThreads) = this->GetParam();
+
     size_t sliceSize = totalSize / numThreads, 
            remainder = totalSize % numThreads,
            start     = 0;
@@ -98,75 +100,51 @@ using CArraySharedLong = CArrayShared<long>;
 using CArraySharedDouble = CArrayShared<double>;
 
 TEST_P(CArraySharedInt, SequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(sequential_iterate<int>, totalSize, numThreads);
+    this->runTest(sequential_iterate<int>);
 }
 
 TEST_P(CArraySharedLong, SequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(sequential_iterate<long>, totalSize, numThreads);
+    this->runTest(sequential_iterate<long>);
 }
 
 TEST_P(CArraySharedDouble, SequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(sequential_iterate<double>, totalSize, numThreads);
+    this->runTest(sequential_iterate<double>);
 }
 
 TEST_P(CArraySharedInt, ReverseSequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_sequential_iterate<int>, totalSize, numThreads);
+    this->runTest(reverse_sequential_iterate<int>);
 }
 
 TEST_P(CArraySharedLong, ReverseSequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_sequential_iterate<long>, totalSize, numThreads);
+    this->runTest(reverse_sequential_iterate<long>);
 }
 
 TEST_P(CArraySharedDouble, ReverseSequentialIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_sequential_iterate<double>, totalSize, numThreads);
+    this->runTest(reverse_sequential_iterate<double>);
 }
 
 TEST_P(CArraySharedInt, JumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(jump_iterate<int>, totalSize, numThreads);
+    this->runTest(jump_iterate<int>);
 }
 
 TEST_P(CArraySharedLong, JumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(jump_iterate<long>, totalSize, numThreads);
+    this->runTest(jump_iterate<long>);
 }
 
 TEST_P(CArraySharedDouble, JumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(jump_iterate<double>, totalSize, numThreads);
+    this->runTest(jump_iterate<double>);
 }
 
 TEST_P(CArraySharedInt, ReverseJumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_jump_iterate<int>, totalSize, numThreads);
+    this->runTest(reverse_jump_iterate<int>);
 }
 
 TEST_P(CArraySharedLong, ReverseJumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_jump_iterate<long>, totalSize, numThreads);
+    this->runTest(reverse_jump_iterate<long>);
 }
 
 TEST_P(CArraySharedDouble, ReverseJumpIterate) {
-    size_t totalSize, numThreads;
-    std::tie(totalSize, numThreads) = this->GetParam();
-    this->runTest(reverse_jump_iterate<double>, totalSize, numThreads);
+    this->runTest(reverse_jump_iterate<double>);
 }
 
 std::vector<size_t> sizes = {10, 100, 1000, 10000, 100000, 1000000, 2000000};
