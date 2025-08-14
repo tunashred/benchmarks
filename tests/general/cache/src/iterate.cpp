@@ -29,6 +29,16 @@ void sequential_iterate(const CArray<T>* test) {
 }
 
 template <typename T>
+void reverse_sequential_iterate(const CArray<T>* test) {
+    size_t size = test->GetParam();
+    for (size_t i = 0; i < LOOP_COUNT; i++) {
+        for (size_t j = size - 1; j > 0; j--) {
+            test->array[j]++;
+        }
+    }
+}
+
+template <typename T>
 void jump_iterate(const CArray<T>* test) {
     constexpr size_t element_size = sizeof(T),
                      jump_size    = CACHE_LINE / element_size;
@@ -42,6 +52,25 @@ void jump_iterate(const CArray<T>* test) {
                 test->array[j]++;
         
                 j += jump_size;
+            }
+        }
+    }
+}
+
+template <typename T>
+void reverse_jump_iterate(const CArray<T>* test) {
+    constexpr size_t element_size = sizeof(T),
+                     jump_size    = CACHE_LINE / element_size;
+    
+    size_t size = test->GetParam();
+
+    for (size_t i = 0; i < LOOP_COUNT; i++) {
+        for (size_t k = 0; k < jump_size; k++) {
+            size_t j = size - k - 1;
+            while (j < size) {
+                test->array[j]++;
+        
+                j -= jump_size;
             }
         }
     }
@@ -63,6 +92,18 @@ TEST_P(CArrayDouble, SequentialIterate) {
     sequential_iterate(this);
 }
 
+TEST_P(CArrayInt, DISABLED_ReverseSequentialIterate) {
+    reverse_sequential_iterate(this);
+}
+
+TEST_P(CArrayLong, DISABLED_ReverseSequentialIterate) {
+    reverse_sequential_iterate(this);
+}
+
+TEST_P(CArrayDouble, DISABLED_ReverseSequentialIterate) {
+    reverse_sequential_iterate(this);
+}
+
 TEST_P(CArrayInt, JumpIterate) {
     jump_iterate(this);
 }
@@ -73,6 +114,18 @@ TEST_P(CArrayLong, JumpIterate) {
 
 TEST_P(CArrayDouble, JumpIterate) {
     jump_iterate(this);
+}
+
+TEST_P(CArrayInt, DISABLED_ReverseJumpIterate) {
+    reverse_jump_iterate(this);
+}
+
+TEST_P(CArrayLong, DISABLED_ReverseJumpIterate) {
+    reverse_jump_iterate(this);
+}
+
+TEST_P(CArrayDouble, DISABLED_ReverseJumpIterate) {
+    reverse_jump_iterate(this);
 }
 
 INSTANTIATE_TEST_SUITE_P(
