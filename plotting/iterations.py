@@ -1,6 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FuncFormatter
+import seaborn as sns
+from matplotlib.patches import Rectangle
+import matplotlib.patches as mpatches
+
+# Set publication-quality style
+plt.style.use('seaborn-v0_8-whitegrid')
+sns.set_palette("husl")
+plt.rcParams.update({
+    'font.size': 10,
+    'axes.titlesize': 14,
+    'axes.labelsize': 12,
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
+    'legend.fontsize': 10,
+    'figure.titlesize': 16,
+    'font.family': 'DejaVu Sans',
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'axes.grid': True,
+    'grid.alpha': 0.3,
+})
 
 # Data extracted from the GTest logs
 raw_data = {
@@ -9,7 +30,7 @@ raw_data = {
             (10, 0), (100, 2), (1000, 16), (10000, 131),
             (100000, 1382), (1000000, 13782), (2000000, 31189)
         ],
-        "Jump": [
+        "Random": [  # Renamed from "Jump" for clarity
             (10, 2), (100, 6), (1000, 51), (10000, 945),
             (100000, 11832), (1000000, 158561), (2000000, 327873)
         ],
@@ -19,7 +40,7 @@ raw_data = {
             (10, 0), (100, 2), (1000, 28), (10000, 266),
             (100000, 2815), (1000000, 28604), (2000000, 146210)
         ],
-        "Jump": [
+        "Random": [
             (10, 1), (100, 5), (1000, 51), (10000, 1038),
             (100000, 15165), (1000000, 166890), (2000000, 1076490)
         ],
@@ -29,7 +50,7 @@ raw_data = {
             (10, 0), (100, 1), (1000, 12), (10000, 127),
             (100000, 1302), (1000000, 13352), (2000000, 27942)
         ],
-        "Jump": [
+        "Random": [
             (10, 2), (100, 6), (1000, 53), (10000, 999),
             (100000, 11159), (1000000, 148445), (2000000, 329537)
         ],
@@ -39,273 +60,216 @@ raw_data = {
             (10, 0), (100, 2), (1000, 27), (10000, 257),
             (100000, 2656), (1000000, 29799), (2000000, 165417)
         ],
-        "Jump": [
+        "Random": [
             (10, 1), (100, 5), (1000, 53), (10000, 1047),
             (100000, 15545), (1000000, 187580), (2000000, 2253729)
         ],
     }
 }
 
-def smart_format(x, pos):
-    """Custom formatter for y-axis that shows values in scientific notation or regular format"""
+
+def smart_format_time(x, pos):
+    """Format time values with appropriate units and precision"""
     if x == 0:
         return '0'
     elif x < 1:
-        return f'{x:.1f}'
+        return f'{x * 1000:.0f}μs'
     elif x < 1000:
+        return f'{x:.0f}ms'
+    elif x < 60000:
+        return f'{x / 1000:.1f}s'
+    else:
+        return f'{x / 60000:.1f}min'
+
+
+def smart_format_size(x, pos):
+    """Format array size with appropriate units"""
+    if x < 1000:
         return f'{x:.0f}'
     elif x < 1000000:
         return f'{x / 1000:.0f}K'
     else:
-        # Use scientific notation for large numbers
-        exp = int(np.log10(x))
-        mantissa = x / (10 ** exp)
-        if mantissa == 1:
-            return f'10$^{{{exp}}}$'
-        else:
-            return f'{mantissa:.1f}×10$^{{{exp}}}$'
+        return f'{x / 1000000:.1f}M'
 
-def smart_format(x, pos):
-    """Custom formatter for y-axis that shows values in scientific notation or regular format"""
-    if x == 0:
-        return '0'
-    elif x < 1:
-        return f'{x:.1f}'
-    elif x < 1000:
-        return f'{x:.0f}'
-    elif x < 1000000:
-        return f'{x / 1000:.0f}K'
-    else:
-        # Use scientific notation for large numbers
-        exp = int(np.log10(x))
-        mantissa = x / (10 ** exp)
-        if mantissa == 1:
-            return f'10$^{{{exp}}}$'
-        else:
-            return f'{mantissa:.1f}×10$^{{{exp}}}$'
 
-def setup_y_axis(ax, times):
-    """Setup y-axis with smart tick placement and formatting"""
-    # Get the range of data
-    min_time = min([t for t in times if t > 0] + [1])  # Avoid log(0)
-    max_time = max(times)
+def calculate_complexity_line(sizes, base_time, complexity='linear'):
+    """Calculate theoretical complexity lines for comparison"""
+    if complexity == 'linear':
+        return [base_time * (size / sizes[0]) for size in sizes]
+    elif complexity == 'quadratic':
+        return [base_time * (size / sizes[0]) ** 2 for size in sizes]
+    elif complexity == 'nlogn':
+        return [base_time * (size / sizes[0]) * np.log2(size / sizes[0]) for size in sizes]
 
-    # Create custom tick positions
-    if max_time > 0:
-        # Generate ticks at powers of 10 and some intermediate values
-        log_min = np.floor(np.log10(min_time))
-        log_max = np.ceil(np.log10(max_time))
 
-        ticks = []
-        for exp in range(int(log_min), int(log_max) + 1):
-            base = 10 ** exp
-            # Add main power of 10
-            ticks.append(base)
-            # Add some intermediate values if there's room
-            if exp < log_max:
-                ticks.extend([2 * base, 5 * base])
+def add_performance_annotations(ax, sizes, seq_times, rand_times):
+    """Add performance ratio annotations and highlight significant differences"""
 
-        # Filter ticks to be within our data range
-        ticks = [t for t in ticks if min_time / 2 <= t <= max_time * 2]
-        ticks = sorted(set(ticks))
+    # Calculate performance ratios
+    ratios = []
+    for i, (seq, rand) in enumerate(zip(seq_times, rand_times)):
+        if seq > 0:
+            ratio = rand / seq
+            ratios.append((sizes[i], ratio))
 
-        ax.set_yticks(ticks)
-        ax.yaxis.set_major_formatter(FuncFormatter(smart_format))
+    # Add ratio annotations for largest sizes
+    if len(ratios) >= 2:
+        size, ratio = ratios[-1]  # Last (largest) size
+        if ratio > 2:  # Only annotate significant differences
+            ax.annotate(f'{ratio:.1f}× slower',
+                        xy=(size, rand_times[-1]),
+                        xytext=(20, 20), textcoords='offset points',
+                        bbox=dict(boxstyle='round,pad=0.3',
+                                  facecolor='orange', alpha=0.7),
+                        arrowprops=dict(arrowstyle='->', lw=1.2),
+                        fontsize=9, fontweight='bold')
 
-def add_smart_annotations(ax, annotations):
-    """Add annotations with smart positioning to avoid overlaps"""
-    if not annotations:
-        return
 
-    # Convert to log space for better distance calculation on log plots
-    for ann in annotations:
-        ann['log_x'] = np.log10(ann['x'])
-        ann['log_y'] = np.log10(max(ann['y'], 0.1))  # Avoid log(0)
+def plot_individual_benchmarks(data):
+    """Plot individual benchmark comparisons for each data type with CS standards"""
 
-    # Group annotations by proximity in log space
-    proximity_threshold = 0.15  # Adjust this to control grouping sensitivity
-    groups = []
-    used = set()
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+    fig.suptitle('Memory Access Pattern Performance Analysis\nSequential vs Random Access',
+                 fontsize=16, fontweight='bold', y=0.98)
 
-    for i, ann in enumerate(annotations):
-        if i in used:
-            continue
+    axes = axes.flatten()
+    colors = ['#1f77b4', '#ff7f0e']  # Blue for sequential, orange for random
 
-        group = [ann]
-        used.add(i)
+    for idx, (dtype, modes) in enumerate(data.items()):
+        ax = axes[idx]
 
-        # Find nearby annotations
-        for j, other in enumerate(annotations):
-            if j in used or j <= i:
-                continue
+        # Extract data
+        seq_sizes = [x[0] for x in modes['Sequential']]
+        seq_times = [max(x[1], 0.1) for x in modes['Sequential']]  # Avoid log(0)
+        rand_sizes = [x[0] for x in modes['Random']]
+        rand_times = [max(x[1], 0.1) for x in modes['Random']]
 
-            # Calculate distance in log space
-            dx = abs(ann['log_x'] - other['log_x'])
-            dy = abs(ann['log_y'] - other['log_y'])
-            distance = np.sqrt(dx * dx + dy * dy)
+        # Plot lines with better styling
+        ax.plot(seq_sizes, seq_times, 'o-', color=colors[0],
+                label='Sequential Access', linewidth=2.5, markersize=7,
+                markerfacecolor='white', markeredgewidth=2)
+        ax.plot(rand_sizes, rand_times, 's-', color=colors[1],
+                label='Random Access', linewidth=2.5, markersize=7,
+                markerfacecolor='white', markeredgewidth=2)
 
-            if distance < proximity_threshold:
-                group.append(other)
-                used.add(j)
+        # Add theoretical complexity reference (linear for sequential)
+        if seq_times[1] > 0:
+            theoretical = calculate_complexity_line(seq_sizes, seq_times[1])
+            ax.plot(seq_sizes, theoretical, '--', color='gray', alpha=0.6,
+                    label='O(n) Reference', linewidth=1.5)
 
-        groups.append(group)
+        # Formatting
+        ax.set_title(
+            f'{dtype.upper()} Data Type\n({8 if dtype == "double" else 4 if dtype == "float" else 8 if dtype == "long" else 4} bytes per element)',
+            fontweight='bold', pad=15)
+        ax.set_xlabel('Array Size (elements)')
+        ax.set_ylabel('Execution Time (ms)')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
 
-    # Position annotations for each group
-    for group in groups:
-        if len(group) == 1:
-            # Single annotation - place above point
-            ann = group[0]
-            ax.annotate(ann['text'],
-                        (ann['x'], ann['y']),
-                        textcoords="offset points",
-                        xytext=(0, 12),
-                        ha='center',
-                        fontsize=8,
-                        color=ann['color'],
-                        alpha=0.9,
-                        bbox=dict(boxstyle="round,pad=0.2",
-                                  facecolor='white',
-                                  alpha=0.8,
-                                  edgecolor='none'))
-        else:
-            # Multiple annotations - arrange in a smart pattern
-            group.sort(key=lambda a: a['y'])  # Sort by y value
+        # Custom formatters
+        ax.xaxis.set_major_formatter(FuncFormatter(smart_format_size))
+        ax.yaxis.set_major_formatter(FuncFormatter(smart_format_time))
 
-            # Calculate positions in a more spread out pattern
-            n = len(group)
-            positions = []
+        # Add performance annotations
+        add_performance_annotations(ax, seq_sizes, seq_times, rand_times)
 
-            if n == 2:
-                positions = [(-20, 15), (20, 15)]
-            elif n == 3:
-                positions = [(-25, 20), (0, 25), (25, 20)]
-            elif n == 4:
-                positions = [(-30, 15), (-10, 25), (10, 25), (30, 15)]
-            else:
-                # For more than 4, use a circular arrangement
-                for i in range(n):
-                    angle = 2 * np.pi * i / n - np.pi / 2  # Start from top
-                    radius = 25
-                    x_offset = radius * np.cos(angle)
-                    y_offset = radius * np.sin(angle) + 20  # Offset upward
-                    positions.append((x_offset, y_offset))
+        # Enhanced grid
+        ax.grid(True, which="major", linestyle='-', alpha=0.4)
+        ax.grid(True, which="minor", linestyle=':', alpha=0.2)
 
-            for i, ann in enumerate(group):
-                x_offset, y_offset = positions[i] if i < len(positions) else (0, 15)
+        # Legend with better positioning
+        ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True)
 
-                ax.annotate(ann['text'],
-                            (ann['x'], ann['y']),
-                            textcoords="offset points",
-                            xytext=(x_offset, y_offset),
-                            ha='center',
-                            fontsize=7,
-                            color=ann['color'],
-                            alpha=0.9,
-                            bbox=dict(boxstyle="round,pad=0.2",
-                                      facecolor='white',
-                                      alpha=0.8,
-                                      edgecolor=ann['color'],
-                                      linewidth=0.5),
-                            arrowprops=dict(arrowstyle='->',
-                                            connectionstyle='arc3,rad=0.1',
-                                            color=ann['color'],
-                                            alpha=0.6,
-                                            lw=0.8))
-
-def plot_benchmarks(data):
-    """Plot individual benchmark comparisons for each data type"""
-    for dtype, modes in data.items():
-        plt.figure(figsize=(12, 7))
-        ax = plt.gca()
-
-        all_times = []
-        annotations = []
-
-        for mode, values in modes.items():
-            sizes = [x[0] for x in values]
-            times = [x[1] for x in values]
-            all_times.extend(times)
-
-            # Plot line and markers
-            line = plt.plot(sizes, times, marker='o', label=mode, linewidth=2, markersize=6)
-
-            # Collect annotations
-            for i, (size, time) in enumerate(values):
-                if time > 0:  # Only annotate non-zero values
-                    annotations.append({
-                        'x': size, 'y': time, 'text': f'{time}',
-                        'color': line[0].get_color(), 'mode': mode
-                    })
-
-        # Add smart annotations
-        add_smart_annotations(ax, annotations)
-
-        plt.title(f"Sequential vs Jump Iterate - {dtype} Array", fontsize=14, fontweight='bold')
-        plt.xlabel("Array Size", fontsize=12)
-        plt.ylabel("Time (ms)", fontsize=12)
-        plt.xscale("log")
-        plt.yscale("log")
-
-        # Setup custom y-axis
-        setup_y_axis(ax, all_times)
-
-        plt.grid(True, which="major", linestyle='--', linewidth=0.5, alpha=0.7)
-        plt.grid(True, which="minor", linestyle=':', linewidth=0.3, alpha=0.4)
-        plt.legend(fontsize=11)
-        plt.tight_layout()
-        plt.savefig(f"benchmark_{dtype}.png", dpi=300, bbox_inches='tight')
-        plt.show()
-
-def plot_combined(data, mode):
-    """Plot combined comparison of all data types for a specific mode"""
-    plt.figure(figsize=(12, 7))
-    ax = plt.gca()
-
-    all_times = []
-    colors = plt.cm.tab10(np.linspace(0, 1, len(data)))
-
-    # Collect all annotation positions to avoid overlaps
-    annotations = []
-
-    for i, (dtype, modes) in enumerate(data.items()):
-        if mode in modes:
-            sizes = [x[0] for x in modes[mode]]
-            times = [x[1] for x in modes[mode]]
-            all_times.extend(times)
-
-            # Plot line and markers
-            line = plt.plot(sizes, times, marker='o', label=dtype,
-                            linewidth=2, markersize=6, color=colors[i])
-
-            # Collect annotations for this line
-            for j, (size, time) in enumerate(modes[mode]):
-                if time > 0 and j % 2 == 0:  # Annotate every other point and non-zero values
-                    annotations.append({
-                        'x': size, 'y': time, 'text': f'{time}',
-                        'color': colors[i], 'dtype': dtype
-                    })
-
-    # Add annotations with smart positioning to avoid overlaps
-    add_smart_annotations(ax, annotations)
-
-    plt.title(f"{mode} Iterate - All Types", fontsize=14, fontweight='bold')
-    plt.xlabel("Array Size", fontsize=12)
-    plt.ylabel("Time (ms)", fontsize=12)
-    plt.xscale("log")
-    plt.yscale("log")
-
-    # Setup custom y-axis
-    setup_y_axis(ax, all_times)
-
-    plt.grid(True, which="major", linestyle='--', linewidth=0.5, alpha=0.7)
-    plt.grid(True, which="minor", linestyle=':', linewidth=0.3, alpha=0.4)
-    plt.legend(fontsize=11)
     plt.tight_layout()
-    # plt.savefig(f"benchmark_all_{mode.lower()}.png", dpi=300, bbox_inches='tight')
+    plt.subplots_adjust(top=0.88)
+    plt.savefig('memory_access_patterns.png', dpi=300, bbox_inches='tight',
+                facecolor='white', edgecolor='none')
     plt.show()
 
 
-plot_combined(raw_data, "Sequential")
-plot_combined(raw_data, "Jump")
+def plot_combined_analysis(data):
+    """Create a comprehensive analysis with multiple subplots"""
 
-plot_benchmarks(raw_data)
+    fig = plt.figure(figsize=(16, 10))
+    gs = fig.add_gridspec(2, 3, hspace=0.3, wspace=0.3)
+
+    # Main comparison plot
+    ax1 = fig.add_subplot(gs[0, :2])
+    ax2 = fig.add_subplot(gs[1, :2])
+    ax3 = fig.add_subplot(gs[:, 2])
+
+    fig.suptitle('Comprehensive Memory Access Performance Analysis',
+                 fontsize=16, fontweight='bold')
+
+    colors = plt.cm.Set1(np.linspace(0, 1, len(data)))
+
+    # Sequential access patterns
+    for i, (dtype, modes) in enumerate(data.items()):
+        sizes = [x[0] for x in modes['Sequential']]
+        times = [max(x[1], 0.1) for x in modes['Sequential']]
+
+        ax1.plot(sizes, times, 'o-', color=colors[i], label=f'{dtype}',
+                 linewidth=2, markersize=6)
+
+    ax1.set_title('Sequential Access Performance', fontweight='bold')
+    ax1.set_xlabel('Array Size')
+    ax1.set_ylabel('Time (ms)')
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Random access patterns
+    for i, (dtype, modes) in enumerate(data.items()):
+        sizes = [x[0] for x in modes['Random']]
+        times = [max(x[1], 0.1) for x in modes['Random']]
+
+        ax2.plot(sizes, times, 's-', color=colors[i], label=f'{dtype}',
+                 linewidth=2, markersize=6)
+
+    ax2.set_title('Random Access Performance', fontweight='bold')
+    ax2.set_xlabel('Array Size')
+    ax2.set_ylabel('Time (ms)')
+    ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+
+    # Performance ratio analysis
+    sizes_for_ratio = [x[0] for x in data['int']['Sequential']]
+
+    for i, (dtype, modes) in enumerate(data.items()):
+        seq_times = [max(x[1], 0.1) for x in modes['Sequential']]
+        rand_times = [max(x[1], 0.1) for x in modes['Random']]
+        ratios = [r / s if s > 0 else 1 for s, r in zip(seq_times, rand_times)]
+
+        ax3.plot(sizes_for_ratio, ratios, 'o-', color=colors[i],
+                 label=f'{dtype}', linewidth=2, markersize=6)
+
+    ax3.set_title('Performance Ratio\n(Random/Sequential)', fontweight='bold')
+    ax3.set_xlabel('Array Size')
+    ax3.set_ylabel('Performance Ratio')
+    ax3.set_xscale('log')
+    ax3.axhline(y=1, color='gray', linestyle='--', alpha=0.7)
+    ax3.legend()
+    ax3.grid(True, alpha=0.3)
+
+    plt.savefig('comprehensive_analysis.png', dpi=300, bbox_inches='tight',
+                facecolor='white', edgecolor='none')
+    plt.show()
+
+
+# Execute the analysis
+if __name__ == "__main__":
+    print("Generating comprehensive benchmark visualizations...")
+    print("=" * 60)
+
+    # Generate all visualizations
+    plot_individual_benchmarks(raw_data)
+    plot_combined_analysis(raw_data)
+
+    print("\nVisualization complete!")
+    print("Generated files:")
+    print("• memory_access_patterns.png - Individual data type comparisons")
+    print("• comprehensive_analysis.png - Combined analysis with ratios")
