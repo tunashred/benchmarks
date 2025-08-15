@@ -21,8 +21,3 @@ public:
         return "size_" + std::to_string(info.param) + "x" + std::to_string(info.param);
     }
 };
-
-template <typename T>
-void create_matrix(T**& matrix, size_t size);
-
-void free_matrix(void**& matrix, size_t size);
