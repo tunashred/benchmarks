@@ -9,7 +9,7 @@ template <typename T>
 class CArrayShared;
 
 template <typename T>
-using iterate_function = std::function<void(size_t, size_t, CArrayShared<T>* test)>;
+using iterate_function = std::function<void(size_t, size_t, CArrayShared<T>*)>;
 
 template <typename T>
 class CArrayShared : public testing::TestWithParam<std::tuple<size_t, size_t>> {
