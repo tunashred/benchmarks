@@ -1,431 +1,10 @@
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-import seaborn as sns
 import numpy as np
-
-# Set publication-quality style
-plt.style.use('seaborn-v0_8-whitegrid')
-sns.set_palette("Set2")
-plt.rcParams.update({
-    'font.size': 11,
-    'axes.titlesize': 14,
-    'axes.labelsize': 12,
-    'xtick.labelsize': 10,
-    'ytick.labelsize': 10,
-    'legend.fontsize': 9,
-    'figure.titlesize': 16,
-    'font.family': 'DejaVu Sans',
-    'axes.spines.top': False,
-    'axes.spines.right': False,
-    'axes.grid': True,
-    'grid.alpha': 0.3,
-})
-
-
-def smart_format_time(x, pos):
-    """Format time values with appropriate units and precision"""
-    if x == 0:
-        return '0'
-    elif x < 1:
-        return f'{x * 1000:.0f}μs'
-    elif x < 1000:
-        return f'{x:.0f}ms'
-    elif x < 60000:
-        return f'{x / 1000:.1f}s'
-    else:
-        return f'{x / 60000:.1f}min'
-
-
-def smart_format_size(x, pos):
-    """Format array size with appropriate units"""
-    if x < 1000:
-        return f'{x:.0f}'
-    elif x < 1000000:
-        return f'{x / 1000:.0f}K'
-    else:
-        return f'{x / 1000000:.1f}M'
-
-
-def plot_cache_locality_impact(data):
-    """Analyze the impact of cache locality across different access patterns"""
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-    fig.suptitle('Cache Locality Impact: Sequential vs Jump Access Patterns', fontsize=16, fontweight='bold')
-
-    data_types = ['Int', 'Long', 'Double']
-    colors = ['#2E86AB', '#A23B72', '#F18F01', '#C73E1D']
-
-    for i, dtype in enumerate(data_types):
-        ax = axes[i]
-        thread_counts = sorted([int(k) for k in data[dtype].keys()])
-
-        # Calculate ratio of Jump vs Sequential for each thread count
-        for j, threads in enumerate(thread_counts):
-            thread_data = data[dtype][threads]
-
-            # Get 100K element performance for comparison
-            seq_time = None
-            jump_time = None
-
-            for size, time in thread_data['SequentialIterate']:
-                if size == 100000:
-                    seq_time = time
-                    break
-
-            for size, time in thread_data['JumpIterate']:
-                if size == 100000:
-                    jump_time = time
-                    break
-
-            if seq_time and jump_time and seq_time > 0:
-                penalty_ratio = jump_time / seq_time
-                ax.bar(threads, penalty_ratio, color=colors[j], alpha=0.7,
-                       label=f'{threads} threads')
-
-        ax.set_title(f'{dtype} Arrays (100K elements)', fontweight='bold')
-        ax.set_xlabel('Thread Count')
-        ax.set_ylabel('Cache Miss Penalty\n(Jump/Sequential Ratio)')
-        ax.axhline(y=1, color='black', linestyle='--', alpha=0.5, label='No penalty')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-    plt.tight_layout()
-    plt.savefig('cache_locality_impact.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-def plot_scaling_efficiency_heatmap(data):
-    """Create a heatmap showing scaling efficiency across patterns and thread counts"""
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    fig.suptitle('Thread Scaling Efficiency Heatmap\n(Efficiency = Speedup / Thread Count)',
-                 fontsize=16, fontweight='bold')
-
-    patterns = ['SequentialIterate', 'ReverseSequentialIterate', 'JumpIterate', 'ReverseJumpIterate']
-    data_types = ['Int', 'Long', 'Double']
-    array_size = 100000
-
-    for idx, pattern in enumerate(patterns):
-        ax = axes[idx // 2, idx % 2]
-
-        # Prepare efficiency matrix
-        thread_counts = [2, 4, 8, 14]
-        efficiency_matrix = np.zeros((len(data_types), len(thread_counts)))
-
-        for i, dtype in enumerate(data_types):
-            baseline_time = None
-            # Get single-thread baseline (use 2-thread as approximation)
-            if '2' in data[dtype]:
-                for size, time in data[dtype]['2'][pattern]:
-                    if size == array_size:
-                        baseline_time = time * 2  # Approximate single-thread time
-                        break
-
-            if baseline_time:
-                for j, threads in enumerate(thread_counts):
-                    if threads in data[dtype]:
-                        for size, time in data[dtype][threads][pattern]:
-                            if size == array_size and time > 0:
-                                speedup = baseline_time / time
-                                efficiency = speedup / threads
-                                efficiency_matrix[i, j] = efficiency
-                                break
-
-        # Create heatmap
-        im = ax.imshow(efficiency_matrix, cmap='RdYlGn', aspect='auto', vmin=0, vmax=1)
-
-        # Add text annotations
-        for i in range(len(data_types)):
-            for j in range(len(thread_counts)):
-                text = ax.text(j, i, f'{efficiency_matrix[i, j]:.2f}',
-                               ha="center", va="center", color="black", fontweight='bold')
-
-        ax.set_title(pattern.replace('Iterate', ''), fontweight='bold')
-        ax.set_xticks(range(len(thread_counts)))
-        ax.set_xticklabels([f'{t}T' for t in thread_counts])
-        ax.set_yticks(range(len(data_types)))
-        ax.set_yticklabels(data_types)
-        ax.set_xlabel('Thread Count')
-        if idx % 2 == 0:
-            ax.set_ylabel('Data Type')
-
-    # Add colorbar
-    plt.colorbar(im, ax=axes, orientation='vertical', fraction=0.046, pad=0.04)
-
-    plt.tight_layout()
-    plt.savefig('scaling_efficiency_heatmap.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-def plot_memory_bandwidth_analysis(data):
-    """Analyze memory bandwidth utilization across different configurations"""
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('Memory Bandwidth Analysis: Throughput vs Array Size', fontsize=16, fontweight='bold')
-
-    data_types = ['Int', 'Long', 'Double']
-    type_sizes = {'Int': 4, 'Long': 8, 'Double': 8}  # bytes
-    patterns = ['SequentialIterate', 'JumpIterate']
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-
-    for i, dtype in enumerate(data_types):
-        for j, pattern in enumerate(patterns):
-            ax = axes[j, i]
-
-            thread_counts = sorted([int(k) for k in data[dtype].keys()])
-
-            for k, threads in enumerate(thread_counts):
-                thread_data = data[dtype][threads][pattern]
-                sizes = [s for s, _ in thread_data if s >= 1000]  # Focus on larger arrays
-                throughputs = []
-
-                for size, time_ms in thread_data:
-                    if size >= 1000 and time_ms > 0:
-                        time_s = time_ms / 1000.0
-                        bytes_processed = size * type_sizes[dtype]
-                        throughput_mbs = (bytes_processed / (1024 * 1024)) / time_s
-                        throughputs.append(throughput_mbs)
-
-                if sizes and throughputs:
-                    ax.loglog(sizes, throughputs, 'o-', color=colors[k],
-                              label=f'{threads} threads', linewidth=2, markersize=4)
-
-            ax.set_title(f'{dtype} - {pattern.replace("Iterate", "")}', fontweight='bold')
-            ax.set_xlabel('Array Size (elements)')
-            ax.set_ylabel('Throughput (MB/s)')
-            ax.grid(True, which="both", alpha=0.3)
-            ax.legend()
-            ax.xaxis.set_major_formatter(FuncFormatter(smart_format_size))
-
-    plt.tight_layout()
-    plt.savefig('memory_bandwidth_analysis.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-def plot_data_type_comparison(data):
-    """Compare performance characteristics across data types"""
-    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
-    fig.suptitle('Data Type Performance Comparison (8 Threads, 100K Elements)',
-                 fontsize=16, fontweight='bold')
-
-    patterns = ['SequentialIterate', 'ReverseSequentialIterate', 'JumpIterate', 'ReverseJumpIterate']
-    data_types = ['Int', 'Long', 'Double']
-    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
-    array_size = 100000
-    threads = '8'
-
-    for idx, pattern in enumerate(patterns):
-        ax = axes[idx // 2, idx % 2]
-
-        times = []
-        for dtype in data_types:
-            if threads in data[dtype] and pattern in data[dtype][threads]:
-                for size, time in data[dtype][threads][pattern]:
-                    if size == array_size:
-                        times.append(time)
-                        break
-                else:
-                    times.append(0)
-            else:
-                times.append(0)
-
-        bars = ax.bar(data_types, times, color=colors, alpha=0.7, edgecolor='black', linewidth=1)
-
-        # Add value labels on bars
-        for bar, time in zip(bars, times):
-            if time > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(times) * 0.02,
-                        f'{time:.0f}ms', ha='center', va='bottom', fontweight='bold')
-
-        ax.set_title(pattern.replace('Iterate', ''), fontweight='bold')
-        ax.set_ylabel('Execution Time (ms)')
-        ax.grid(True, alpha=0.3, axis='y')
-
-    plt.tight_layout()
-    plt.savefig('data_type_comparison.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-def plot_comprehensive_performance_profile(data):
-    """Create a comprehensive performance profile showing key insights"""
-    fig = plt.figure(figsize=(20, 12))
-    gs = fig.add_gridspec(3, 4, hspace=0.3, wspace=0.3)
-    fig.suptitle('Comprehensive Cache Performance Analysis', fontsize=18, fontweight='bold')
-
-    # 1. Cache penalty comparison (top-left)
-    ax1 = fig.add_subplot(gs[0, :2])
-    data_types = ['Int', 'Long', 'Double']
-    thread_counts = [2, 4, 8, 14]
-    array_size = 100000
-
-    x = np.arange(len(data_types))
-    width = 0.2
-
-    for i, threads in enumerate(thread_counts):
-        penalties = []
-        for dtype in data_types:
-            if threads in data[dtype]:
-                seq_time = jump_time = None
-                for size, time in data[dtype][threads]['SequentialIterate']:
-                    if size == array_size:
-                        seq_time = time
-                        break
-                for size, time in data[dtype][threads]['JumpIterate']:
-                    if size == array_size:
-                        jump_time = time
-                        break
-                if seq_time and jump_time and seq_time > 0:
-                    penalties.append(jump_time / seq_time)
-                else:
-                    penalties.append(0)
-            else:
-                penalties.append(0)
-
-        ax1.bar(x + i * width, penalties, width, label=f'{threads}T', alpha=0.8)
-
-    ax1.set_title('Cache Miss Penalty by Data Type', fontweight='bold')
-    ax1.set_xlabel('Data Type')
-    ax1.set_ylabel('Jump/Sequential Ratio')
-    ax1.set_xticks(x + width * 1.5)
-    ax1.set_xticklabels(data_types)
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-
-    # 2. Best scaling pattern (top-right)
-    ax2 = fig.add_subplot(gs[0, 2:])
-    patterns = ['SequentialIterate', 'ReverseSequentialIterate', 'JumpIterate', 'ReverseJumpIterate']
-    best_efficiencies = []
-
-    for pattern in patterns:
-        max_eff = 0
-        for dtype in data_types:
-            baseline = None
-            if '2' in data[dtype]:
-                for size, time in data[dtype]['2'][pattern]:
-                    if size == array_size:
-                        baseline = time * 2
-                        break
-
-            if baseline:
-                for threads in [8, 14]:
-                    if threads in data[dtype]:
-                        for size, time in data[dtype][threads][pattern]:
-                            if size == array_size and time > 0:
-                                speedup = baseline / time
-                                efficiency = speedup / threads
-                                max_eff = max(max_eff, efficiency)
-                                break
-        best_efficiencies.append(max_eff)
-
-    bars = ax2.bar(range(len(patterns)), best_efficiencies,
-                   color=['#2E86AB', '#A23B72', '#F18F01', '#C73E1D'], alpha=0.7)
-    ax2.set_title('Peak Threading Efficiency by Pattern', fontweight='bold')
-    ax2.set_ylabel('Best Efficiency Achieved')
-    ax2.set_xticks(range(len(patterns)))
-    ax2.set_xticklabels([p.replace('Iterate', '') for p in patterns], rotation=45)
-    ax2.grid(True, alpha=0.3)
-
-    # Add efficiency values on bars
-    for bar, eff in zip(bars, best_efficiencies):
-        ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
-                 f'{eff:.2f}', ha='center', va='bottom', fontweight='bold')
-
-    # 3. Memory hierarchy impact (bottom)
-    ax3 = fig.add_subplot(gs[1:, :])
-
-    # Show performance degradation with array size for different patterns
-    thread_count = 8
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-
-    for i, pattern in enumerate(patterns):
-        for dtype in ['Double']:  # Focus on one data type for clarity
-            if str(thread_count) in data[dtype] and pattern in data[dtype][str(thread_count)]:
-                thread_data = data[dtype][str(thread_count)][pattern]
-                sizes = [s for s, _ in thread_data]
-                times = [t for _, t in thread_data]
-
-                # Calculate normalized performance (elements per ms)
-                normalized_perf = [s / t if t > 0 else 0 for s, t in zip(sizes, times)]
-
-                ax3.semilogx(sizes, normalized_perf, 'o-', color=colors[i],
-                             label=pattern.replace('Iterate', ''), linewidth=2, markersize=6)
-
-    ax3.set_title(f'Memory Hierarchy Impact (Double, {thread_count} Threads)', fontweight='bold')
-    ax3.set_xlabel('Array Size (elements)')
-    ax3.set_ylabel('Performance (elements/ms)')
-    ax3.legend()
-    ax3.grid(True, which="both", alpha=0.3)
-    ax3.xaxis.set_major_formatter(FuncFormatter(smart_format_size))
-
-    # Add annotations for cache levels
-    ax3.axvline(x=1000, color='red', linestyle='--', alpha=0.5, label='L1 Cache (~4KB)')
-    ax3.axvline(x=100000, color='orange', linestyle='--', alpha=0.5, label='L2 Cache (~256KB)')
-    ax3.axvline(x=1000000, color='purple', linestyle='--', alpha=0.5, label='L3 Cache (~8MB)')
-
-    plt.savefig('comprehensive_performance_profile.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-# Enhanced function for access pattern comparison with better insights
-def plot_access_pattern_comparison(data):
-    """Enhanced access pattern comparison with scientific insights"""
-    data_types = ['Int', 'Long', 'Double']
-    colors = {'2': '#1f77b4', '4': '#ff7f0e', '8': '#2ca02c', '14': '#d62728'}
-
-    for dtype in data_types:
-        if dtype not in data:
-            continue
-
-        thread_blocks = data[dtype]
-        patterns = list(next(iter(thread_blocks.values())).keys())
-
-        fig, axes = plt.subplots(2, 2, figsize=(16, 12), sharex=True)
-        axes = axes.flatten()
-
-        fig.suptitle(f'{dtype} Array Performance: Cache Behavior Analysis',
-                     fontsize=16, fontweight='bold', y=0.96)
-
-        for idx, pattern in enumerate(patterns):
-            ax = axes[idx]
-
-            for threads, pat_dict in sorted(thread_blocks.items(), key=lambda x: int(x[0])):
-                if pattern not in pat_dict:
-                    continue
-
-                entries = pat_dict[pattern]
-                if not entries:
-                    continue
-
-                sizes = [s for s, _ in entries]
-                times = [max(t, 0.1) for _, t in entries]
-
-                # Calculate throughput for better comparison
-                type_size = {'Int': 4, 'Long': 8, 'Double': 8}[dtype]
-                throughputs = [(s * type_size) / (t * 1024 * 1024) for s, t in zip(sizes, times)]
-
-                ax.loglog(sizes, throughputs, marker='o', color=colors.get(threads, '#333333'),
-                          label=f'{threads} Threads', linewidth=2, markersize=5, alpha=0.8)
-
-            pattern_clean = pattern.replace('Iterate', '')
-            ax.set_title(f'{pattern_clean} Access Pattern', fontweight='bold', pad=15)
-            ax.grid(True, which="major", linestyle='-', alpha=0.4)
-            ax.grid(True, which="minor", linestyle=':', alpha=0.2)
-            ax.xaxis.set_major_formatter(FuncFormatter(smart_format_size))
-            ax.set_ylabel('Throughput (MB/s)', fontsize=11)
-
-            # Add cache level indicators
-            ax.axvline(x=1000, color='red', linestyle='--', alpha=0.3)
-            ax.axvline(x=100000, color='orange', linestyle='--', alpha=0.3)
-            ax.axvline(x=1000000, color='purple', linestyle='--', alpha=0.3)
-
-            if idx == 0:  # Only show legend on first subplot
-                ax.legend(fontsize=9, loc='upper right')
-
-        # Add cache level labels
-        fig.text(0.5, 0.02, 'Array Size (elements) | Vertical lines: L1 (~1K), L2 (~100K), L3 (~1M) cache boundaries',
-                 ha='center', fontsize=10, style='italic')
-        fig.text(0.02, 0.5, 'Memory Throughput (MB/s)', va='center', rotation='vertical', fontsize=12)
-
-        plt.tight_layout(rect=[0.03, 0.05, 1, 0.94])
-        plt.savefig(f'enhanced_access_pattern_{dtype.lower()}.png', dpi=300, bbox_inches='tight')
-        plt.show()
+import seaborn as sns
+
+# Set up the plotting style
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
 
 raw_data = {
     "Int": {
@@ -525,10 +104,290 @@ raw_data = {
 }
 
 
-if __name__ == '__main__':
-    plot_cache_locality_impact(raw_data)
-    plot_scaling_efficiency_heatmap(raw_data)
-    plot_memory_bandwidth_analysis(raw_data)
-    plot_data_type_comparison(raw_data)
-    plot_comprehensive_performance_profile(raw_data)
-    plot_access_pattern_comparison(raw_data)
+def calculate_speedup(base_times, comparison_times):
+    """Calculate speedup ratio between two timing datasets"""
+    speedups = []
+    for (size_b, time_b), (size_c, time_c) in zip(base_times, comparison_times):
+        if size_b == size_c and time_c > 0:
+            speedups.append((size_b, time_b / time_c))
+    return speedups
+
+
+def calculate_efficiency(speedup_data, num_threads):
+    """Calculate parallel efficiency (speedup / num_threads)"""
+    return [(size, speedup / num_threads) for size, speedup in speedup_data]
+
+
+def calculate_throughput(timing_data):
+    """Calculate throughput (elements processed per time unit)"""
+    return [(size, size / time if time > 0 else 0) for size, time in timing_data]
+
+
+# 1. Scalability Analysis - Performance vs Array Size
+def plot_scalability_analysis():
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle('Scalability Analysis: Performance vs Array Size', fontsize=16, fontweight='bold')
+
+    data_types = ['Int', 'Long', 'Double']
+    algorithms = ['SequentialIterate', 'JumpIterate']
+
+    for i, algorithm in enumerate(algorithms):
+        for j, data_type in enumerate(['Int', 'Double']):
+            ax = axes[i][j]
+
+            for threads in [2, 4, 8, 14]:
+                if data_type in raw_data and threads in raw_data[data_type]:
+                    data = raw_data[data_type][threads][algorithm]
+                    sizes, times = zip(*data)
+                    ax.loglog(sizes, times, marker='o', linewidth=2,
+                              label=f'{threads} threads', markersize=6)
+
+            ax.set_xlabel('Array Size (elements)', fontweight='bold')
+            ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+            ax.set_title(f'{data_type} - {algorithm}', fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 2. Speedup Analysis
+def plot_speedup_analysis():
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle('Speedup Analysis: Parallel Performance Gains', fontsize=16, fontweight='bold')
+
+    algorithms = ['SequentialIterate', 'ReverseSequentialIterate', 'JumpIterate', 'ReverseJumpIterate']
+
+    for i, data_type in enumerate(['Int', 'Double']):
+        for j, algorithm in enumerate(['SequentialIterate', 'JumpIterate']):
+            ax = axes[i][j]
+
+            # Use 2-thread performance as baseline
+            if data_type in raw_data and 2 in raw_data[data_type]:
+                baseline_data = raw_data[data_type][2][algorithm]
+
+                for threads in [4, 8, 14]:
+                    if threads in raw_data[data_type]:
+                        comparison_data = raw_data[data_type][threads][algorithm]
+                        speedup_data = calculate_speedup(baseline_data, comparison_data)
+
+                        if speedup_data:
+                            sizes, speedups = zip(*speedup_data)
+                            ax.semilogx(sizes, speedups, marker='o', linewidth=2,
+                                        label=f'{threads} threads', markersize=6)
+
+            # Add ideal speedup lines
+            sizes = [10, 100, 1000, 10000, 100000, 1000000, 2000000]
+            for threads in [4, 8, 14]:
+                ideal_speedup = [threads / 2] * len(sizes)  # threads/2 because baseline is 2 threads
+                ax.semilogx(sizes, ideal_speedup, '--', alpha=0.5,
+                            label=f'Ideal {threads}t' if j == 0 else "")
+
+            ax.set_xlabel('Array Size (elements)', fontweight='bold')
+            ax.set_ylabel('Speedup Factor', fontweight='bold')
+            ax.set_title(f'{data_type} - {algorithm}', fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 3. Parallel Efficiency Analysis
+def plot_efficiency_analysis():
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    fig.suptitle('Parallel Efficiency Analysis (Sequential Iteration)', fontsize=16, fontweight='bold')
+
+    for i, data_type in enumerate(['Int', 'Long', 'Double']):
+        ax = axes[i]
+
+        algorithm = 'SequentialIterate'  # Focus on sequential for efficiency
+        if data_type in raw_data and 2 in raw_data[data_type]:
+            baseline_data = raw_data[data_type][2][algorithm]
+
+            for threads in [4, 8, 14]:
+                if threads in raw_data[data_type]:
+                    comparison_data = raw_data[data_type][threads][algorithm]
+                    speedup_data = calculate_speedup(baseline_data, comparison_data)
+                    efficiency_data = calculate_efficiency(speedup_data, threads / 2)
+
+                    if efficiency_data:
+                        sizes, efficiencies = zip(*efficiency_data)
+                        ax.semilogx(sizes, [e * 100 for e in efficiencies],
+                                    marker='o', linewidth=2, label=f'{threads} threads', markersize=6)
+
+        ax.axhline(y=100, color='red', linestyle='--', alpha=0.7, label='Perfect Efficiency')
+        ax.set_xlabel('Array Size (elements)', fontweight='bold')
+        ax.set_ylabel('Parallel Efficiency (%)', fontweight='bold')
+        ax.set_title(f'{data_type} Data Type', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_ylim(0, 150)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 4. Memory Access Pattern Comparison
+def plot_memory_access_comparison():
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle('Memory Access Pattern Performance Comparison (8 Threads)', fontsize=16, fontweight='bold')
+
+    patterns = [
+        ('SequentialIterate', 'ReverseSequentialIterate'),
+        ('JumpIterate', 'ReverseJumpIterate')
+    ]
+
+    for i, (pattern1, pattern2) in enumerate(patterns):
+        for j, data_type in enumerate(['Int', 'Double']):
+            ax = axes[i][j]
+
+            threads = 8  # Focus on 8 threads for this comparison
+            if data_type in raw_data and threads in raw_data[data_type]:
+                # Forward pattern
+                data1 = raw_data[data_type][threads][pattern1]
+                sizes1, times1 = zip(*data1)
+                ax.loglog(sizes1, times1, marker='o', linewidth=2,
+                          label=pattern1, markersize=6)
+
+                # Reverse pattern
+                data2 = raw_data[data_type][threads][pattern2]
+                sizes2, times2 = zip(*data2)
+                ax.loglog(sizes2, times2, marker='s', linewidth=2,
+                          label=pattern2, markersize=6)
+
+            ax.set_xlabel('Array Size (elements)', fontweight='bold')
+            ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+            ax.set_title(f'{data_type} - {pattern1} vs {pattern2}', fontweight='bold')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 5. Data Type Performance Comparison
+def plot_data_type_comparison():
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle('Data Type Performance Comparison (8 Threads)', fontsize=16, fontweight='bold')
+
+    algorithms = ['SequentialIterate', 'ReverseSequentialIterate', 'JumpIterate', 'ReverseJumpIterate']
+
+    for i, algorithm in enumerate(algorithms):
+        ax = axes[i // 2][i % 2]
+
+        threads = 8
+        for data_type in ['Int', 'Long', 'Double']:
+            if data_type in raw_data and threads in raw_data[data_type]:
+                data = raw_data[data_type][threads][algorithm]
+                sizes, times = zip(*data)
+                ax.loglog(sizes, times, marker='o', linewidth=2,
+                          label=data_type, markersize=6)
+
+        ax.set_xlabel('Array Size (elements)', fontweight='bold')
+        ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+        ax.set_title(algorithm, fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 6. Throughput Analysis
+def plot_throughput_analysis():
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig.suptitle('Throughput Analysis: Elements Processed per Time Unit', fontsize=16, fontweight='bold')
+
+    for i, algorithm in enumerate(['SequentialIterate', 'JumpIterate']):
+        ax = axes[i]
+
+        data_type = 'Int'  # Focus on Int for throughput
+        for threads in [2, 4, 8, 14]:
+            if data_type in raw_data and threads in raw_data[data_type]:
+                data = raw_data[data_type][threads][algorithm]
+                throughput_data = calculate_throughput(data)
+                sizes, throughputs = zip(*throughput_data)
+                ax.loglog(sizes, throughputs, marker='o', linewidth=2,
+                          label=f'{threads} threads', markersize=6)
+
+        ax.set_xlabel('Array Size (elements)', fontweight='bold')
+        ax.set_ylabel('Throughput (elements/time)', fontweight='bold')
+        ax.set_title(f'{algorithm}', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 7. Performance Heatmap
+def plot_performance_heatmap():
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+    fig.suptitle('Performance Heatmap: Execution Time by Thread Count and Array Size', fontsize=16, fontweight='bold')
+
+    algorithm = 'SequentialIterate'
+    array_sizes = [10, 100, 1000, 10000, 100000, 1000000, 2000000]
+    thread_counts = [2, 4, 8, 14]
+
+    for i, data_type in enumerate(['Int', 'Long', 'Double']):
+        # Create matrix for heatmap
+        performance_matrix = np.zeros((len(thread_counts), len(array_sizes)))
+
+        for j, threads in enumerate(thread_counts):
+            if data_type in raw_data and threads in raw_data[data_type]:
+                data = raw_data[data_type][threads][algorithm]
+                for size, time in data:
+                    if size in array_sizes:
+                        k = array_sizes.index(size)
+                        performance_matrix[j][k] = time
+
+        # Create heatmap
+        im = axes[i].imshow(performance_matrix, cmap='YlOrRd', aspect='auto')
+
+        # Set ticks and labels
+        axes[i].set_xticks(range(len(array_sizes)))
+        axes[i].set_xticklabels([f'{size:,}' for size in array_sizes], rotation=45)
+        axes[i].set_yticks(range(len(thread_counts)))
+        axes[i].set_yticklabels(thread_counts)
+
+        axes[i].set_xlabel('Array Size (elements)', fontweight='bold')
+        axes[i].set_ylabel('Thread Count', fontweight='bold')
+        axes[i].set_title(f'{data_type} Data Type', fontweight='bold')
+
+        # Add colorbar
+        plt.colorbar(im, ax=axes[i], label='Execution Time')
+
+    plt.tight_layout()
+    plt.show()
+
+
+# Generate all plots
+if __name__ == "__main__":
+    print("Generating Multithreading Performance Analysis Plots...")
+    print("=" * 60)
+
+    print("\n1. Generating Scalability Analysis...")
+    plot_scalability_analysis()
+
+    print("2. Generating Speedup Analysis...")
+    plot_speedup_analysis()
+
+    print("3. Generating Parallel Efficiency Analysis...")
+    plot_efficiency_analysis()
+
+    print("4. Generating Memory Access Pattern Comparison...")
+    plot_memory_access_comparison()
+
+    print("5. Generating Data Type Performance Comparison...")
+    plot_data_type_comparison()
+
+    print("6. Generating Throughput Analysis...")
+    plot_throughput_analysis()
+
+    print("7. Generating Performance Heatmap...")
+    plot_performance_heatmap()
+
+    print("\nAll plots generated successfully!")
+    print("=" * 60)
