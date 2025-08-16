@@ -39,6 +39,15 @@ void reverse_sequential_iterate(size_t start, size_t end, const CArrayShared<T>*
 }
 
 template <typename T>
+void neighbour_sequential_iterate(size_t size, size_t start, size_t increment, const CArrayShared<T>* test) {
+    for (size_t i = 0; i < LOOP_COUNT; i++) {
+        for (size_t j = start; j + start < size - 1; j += increment) {
+            test->array[j]++;
+        }
+    }
+}
+
+template <typename T>
 void jump_iterate(size_t start, size_t end, const CArrayShared<T>* test) {
     constexpr size_t element_size = sizeof(T),
                      jump_size    = CACHE_LINE / element_size;
@@ -95,6 +104,20 @@ void CArrayShared<T>::runTest(iterate_function<T> iterate) {
     }
 }
 
+template <typename T>
+void CArrayShared<T>::runNeighbourTest() {
+    size_t totalSize, numThreads;
+    std::tie(totalSize, numThreads) = this->GetParam();
+    
+    for (size_t i = 0; i < numThreads; i++) {
+        threads.emplace_back(neighbour_sequential_iterate<T>, totalSize, i, numThreads, this);
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+}
+
 using CArraySharedInt = CArrayShared<int>;
 using CArraySharedLong = CArrayShared<long>;
 using CArraySharedDouble = CArrayShared<double>;
@@ -121,6 +144,18 @@ TEST_P(CArraySharedLong, ReverseSequentialIterate) {
 
 TEST_P(CArraySharedDouble, ReverseSequentialIterate) {
     this->runTest(reverse_sequential_iterate<double>);
+}
+
+TEST_P(CArraySharedInt, NeighbourSequentialIterate) {
+    this->runNeighbourTest();
+}
+
+TEST_P(CArraySharedLong, NeighbourSequentialIterate) {
+    this->runNeighbourTest();
+}
+
+TEST_P(CArraySharedDouble, NeighbourSequentialIterate) {
+    this->runNeighbourTest();
 }
 
 TEST_P(CArraySharedInt, JumpIterate) {

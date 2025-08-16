@@ -23,6 +23,8 @@ public:
 
     void runTest(iterate_function<T> iterate);
 
+    void runNeighbourTest();
+
     static std::string getTestCaseName(const ::testing::TestParamInfo<std::tuple<size_t, size_t>>& info) {
         size_t totalSize, numThreads;
         std::tie(totalSize, numThreads) = info.param;
@@ -35,6 +37,9 @@ static void sequential_iterate(size_t start, size_t end, const CArrayShared<T>* 
 
 template <typename T>
 void reverse_sequential_iterate(size_t start, size_t end, const CArrayShared<T>* test);
+
+template <typename T>
+static void neighbour_sequential_iterate(size_t size, size_t start, size_t increment, const CArrayShared<T>* test);
 
 template <typename T>
 static void jump_iterate(size_t start, size_t end, const CArrayShared<T>* test);
