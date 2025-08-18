@@ -23,6 +23,8 @@ set(COMPILE_FLAGS
     -Wconversion
     -Wunreachable-code
     -fstack-usage
+    -mavx
+    -mavx2
 )
 
 set(RELEASE_FLAGS

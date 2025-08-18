@@ -16,6 +16,7 @@ endif()
 target_include_directories(${EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/general/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/cache/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/simd/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
 
@@ -32,4 +33,5 @@ gtest_discover_tests(${EXECUTABLE} DISCOVERY_TIMEOUT 10)
 
 add_subdirectory(general)
 add_subdirectory(multithreaded)
+add_subdirectory(simd)
 add_subdirectory(utils)
