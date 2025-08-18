@@ -1,0 +1,114 @@
+#include "simd/matrix.hpp"
+#include "utils/utils.hpp"
+
+#include <immintrin.h>
+
+template <typename T>
+void AlignedMatrix<T>::SetUp() {
+    size_t size = this->GetParam();
+    size_t totalSize = size * size * sizeof(T);
+    if (totalSize % ALIGNMENT_32 != 0) {
+        totalSize += ALIGNMENT_32 - (totalSize % ALIGNMENT_32);
+    }
+    matrix_A = static_cast<T*>(std::aligned_alloc(ALIGNMENT_32, totalSize));
+    matrix_B = static_cast<T*>(std::aligned_alloc(ALIGNMENT_32, totalSize));
+    matrix_C = static_cast<T*>(std::aligned_alloc(ALIGNMENT_32, totalSize));
+
+    memset(matrix_A, 3, totalSize);
+    memset(matrix_B, 3, totalSize);
+    memset(matrix_C, 3, totalSize);
+}
+
+template <typename T>
+void AlignedMatrix<T>::TearDown() {
+    free(matrix_A);
+    free(matrix_B);
+    free(matrix_C);
+}
+
+template <>
+void AlignedMatrix<int>::naive_mul() {
+    size_t size = this->GetParam();
+    for (size_t i = 0; i < size; i++) {
+        for (size_t j = 0; j + SIMD_INT_WIDTH <= size; j += SIMD_INT_WIDTH) {
+            __m256i sum = _mm256_setzero_si256();
+            for (size_t k = 0; k < size; k++) {
+                // matrix_C[i * size + j] += matrix_A[i * size + k] * matrix_B[k * size + j];
+                __m256i a = _mm256_set1_epi32(matrix_A[i * size + k]);
+
+                __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
+
+                sum = _mm256_add_epi32(sum, _mm256_mullo_epi32(a, b));
+            }
+            _mm256_store_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]), sum);
+        }
+    }
+}
+
+template <>
+void AlignedMatrix<int>::optimized_mul() {
+    size_t size = this->GetParam();
+    for (size_t i = 0; i < size; i++) {
+        for (size_t k = 0; k < size; k++) {
+            __m256i a = _mm256_set1_epi32(matrix_A[i * size + k]);
+            for (size_t j = 0; j + 8 <= size; j += 8) { 
+                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]));
+
+                __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
+
+                c = _mm256_add_epi32(c, _mm256_mullo_epi32(a, b));
+
+                _mm256_store_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]), c);
+            }
+        }
+    }
+}
+
+using AlignedMatrixInt = AlignedMatrix<int>;
+using AlignedMatrixLong = AlignedMatrix<long>;
+using AlignedMatrixDouble = AlignedMatrix<double>;
+
+TEST_P(AlignedMatrixInt, NaiveMul) {
+    naive_mul();
+}
+
+// TEST_P(AlignedMatrixLong, NaiveMul) {
+//     naive_mul();
+// }
+
+// TEST_P(AlignedMatrixDouble, NaiveMul) {
+//     naive_mul();
+// }
+
+TEST_P(AlignedMatrixInt, OptimizedMul) {
+    optimized_mul();
+}
+
+// TEST_P(AlignedMatrixLong, OptimizedMul) {
+//     optimized_mul();
+// }
+
+// TEST_P(AlignedMatrixDouble, OptimizedMul) {
+//     optimized_mul();
+// }
+
+INSTANTIATE_TEST_SUITE_P(
+    simd_singlecore_matrix,
+    AlignedMatrixInt,
+    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    AlignedMatrixInt::getTestCaseName
+);
+
+INSTANTIATE_TEST_SUITE_P(
+    simd_singlecore_matrix,
+    AlignedMatrixLong,
+    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    AlignedMatrixLong::getTestCaseName
+);
+
+INSTANTIATE_TEST_SUITE_P(
+    simd_singlecore_matrix,
+    AlignedMatrixDouble,
+    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    AlignedMatrixDouble::getTestCaseName
+);

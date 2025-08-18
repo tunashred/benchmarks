@@ -1,4 +1,5 @@
 #include "simd/iterate.hpp"
+#include "utils/utils.hpp"
 #include <immintrin.h>
 #include <cstdlib>
 
