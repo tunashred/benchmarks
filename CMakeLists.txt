@@ -47,6 +47,69 @@ endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lstdc++")
 
+function(generate_assembly_for_file SRC_FILE TARGET_NAME)
+    # Get file name and extension
+    get_filename_component(FILE_NAME ${SRC_FILE} NAME)
+    get_filename_component(FILE_EXT ${SRC_FILE} EXT)
+
+    # Only process source files
+    if(NOT FILE_EXT MATCHES "\\.(cpp|cc|cxx|c)$")
+        return()
+    endif()
+
+    # Compute relative path from project root
+    file(RELATIVE_PATH REL_PATH ${CMAKE_SOURCE_DIR} ${SRC_FILE})
+
+    # Create a unique target name (replace / and . with _)
+    string(REPLACE "/" "_" UNIQUE_TARGET_NAME ${REL_PATH})
+    string(REPLACE "." "_" UNIQUE_TARGET_NAME ${UNIQUE_TARGET_NAME})
+    set(UNIQUE_TARGET_NAME "${UNIQUE_TARGET_NAME}_assembly")
+
+    # Gather include directories from the target
+    get_target_property(TARGET_INCLUDE_DIRS ${TARGET_NAME} INCLUDE_DIRECTORIES)
+    set(INCLUDE_FLAGS "")
+    if(TARGET_INCLUDE_DIRS)
+        foreach(INCLUDE_DIR ${TARGET_INCLUDE_DIRS})
+            list(APPEND INCLUDE_FLAGS -I${INCLUDE_DIR})
+        endforeach()
+    endif()
+
+    # Auto-discover all include directories in the project
+    file(GLOB_RECURSE ALL_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/*/include")
+    foreach(INCLUDE_DIR ${ALL_INCLUDE_DIRS})
+        list(APPEND INCLUDE_FLAGS -I${INCLUDE_DIR})
+    endforeach()
+    if(EXISTS "${CMAKE_SOURCE_DIR}/include")
+        list(APPEND INCLUDE_FLAGS -I${CMAKE_SOURCE_DIR}/include)
+    endif()
+
+    # Absolute path of source file
+    get_filename_component(ABS_SRC_FILE ${SRC_FILE} ABSOLUTE)
+
+    # Output assembly path under build/asm + relative path
+    set(ASM_FILE "${CMAKE_CURRENT_BINARY_DIR}/asm/${REL_PATH}.s")
+
+    # Ensure the output directory exists
+    get_filename_component(ASM_DIR ${ASM_FILE} DIRECTORY)
+    file(MAKE_DIRECTORY ${ASM_DIR})
+
+    add_custom_target(${UNIQUE_TARGET_NAME} ALL
+        COMMAND ${CMAKE_CXX_COMPILER}
+            ${COMPILE_FLAGS}
+            ${DEBUG_FLAGS}
+            ${INCLUDE_FLAGS}
+            -S
+            -masm=intel
+            -fno-asynchronous-unwind-tables
+            -fno-dwarf2-cfi-asm
+            -fno-stack-protector
+            ${ABS_SRC_FILE}
+            -o ${ASM_FILE}
+        COMMENT "Generating assembly for ${REL_PATH}"
+        VERBATIM
+    )
+endfunction()
+
 # GTest
 find_package(GTest REQUIRED)
 include(GoogleTest)
