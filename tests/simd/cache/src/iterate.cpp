@@ -14,9 +14,7 @@ void AlignedArray<T>::SetUp() {
 
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << size;
 
-    for (size_t i = 0; i < size; i++) {
-        array[i] = static_cast<T>(0);
-    }
+    memset(array, 0, totalSize);
 }
 
 template <typename T>
