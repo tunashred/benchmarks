@@ -2,9 +2,6 @@
 
 #include <gtest/gtest.h>
 
-constexpr size_t CACHE_LINE = 64;
-constexpr size_t LOOP_COUNT = 200000;
-
 template <typename T>
 class AlignedArray : public testing::TestWithParam<size_t> {
 protected:
