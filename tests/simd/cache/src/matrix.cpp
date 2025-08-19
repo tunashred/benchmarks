@@ -33,7 +33,6 @@ void AlignedMatrix<int>::naive_mul() {
         for (size_t j = 0; j + SIMD_INT_WIDTH <= size; j += SIMD_INT_WIDTH) {
             __m256i sum = _mm256_setzero_si256();
             for (size_t k = 0; k < size; k++) {
-                // matrix_C[i * size + j] += matrix_A[i * size + k] * matrix_B[k * size + j];
                 __m256i a = _mm256_set1_epi32(matrix_A[i * size + k]);
 
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
@@ -51,7 +50,7 @@ void AlignedMatrix<int>::optimized_mul() {
     for (size_t i = 0; i < size; i++) {
         for (size_t k = 0; k < size; k++) {
             __m256i a = _mm256_set1_epi32(matrix_A[i * size + k]);
-            for (size_t j = 0; j + 8 <= size; j += 8) { 
+            for (size_t j = 0; j + SIMD_INT_WIDTH <= size; j += SIMD_INT_WIDTH) { 
                 __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]));
 
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
@@ -59,6 +58,44 @@ void AlignedMatrix<int>::optimized_mul() {
                 c = _mm256_add_epi32(c, _mm256_mullo_epi32(a, b));
 
                 _mm256_store_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]), c);
+            }
+        }
+    }
+}
+
+template <>
+void AlignedMatrix<long>::optimized_mul() {
+    size_t size = this->GetParam();
+    for (size_t i = 0; i < size; i++) {
+        for (size_t k = 0; k < size; k++) {
+            __m256i a = _mm256_set1_epi64x(matrix_A[i * size + k]);
+            for (size_t j = 0; j + SIMD_LONG_WIDTH <= size; j += SIMD_LONG_WIDTH) { 
+                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]));
+
+                __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
+
+                c = _mm256_add_epi64(c, _mm256_mullo_epi32(a, b));
+
+                _mm256_store_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]), c);
+            }
+        }
+    }
+}
+
+template <>
+void AlignedMatrix<double>::optimized_mul() {
+    size_t size = this->GetParam();
+    for (size_t i = 0; i < size; i++) {
+        for (size_t k = 0; k < size; k++) {
+            __m256d a = _mm256_set1_pd(matrix_A[i * size + k]);
+            for (size_t j = 0; j + SIMD_DOUBLE_WIDTH <= size; j += SIMD_DOUBLE_WIDTH) { 
+                __m256d c = _mm256_load_pd(&matrix_C[i * size + j]);
+
+                __m256d b = _mm256_load_pd(&matrix_B[k * size + j]);
+
+                c = _mm256_add_pd(c, _mm256_mul_pd(a, b));
+
+                _mm256_store_pd(&matrix_C[i * size + j], c);
             }
         }
     }
@@ -84,13 +121,13 @@ TEST_P(AlignedMatrixInt, OptimizedMul) {
     optimized_mul();
 }
 
-// TEST_P(AlignedMatrixLong, OptimizedMul) {
-//     optimized_mul();
-// }
+TEST_P(AlignedMatrixLong, OptimizedMul) {
+    optimized_mul();
+}
 
-// TEST_P(AlignedMatrixDouble, OptimizedMul) {
-//     optimized_mul();
-// }
+TEST_P(AlignedMatrixDouble, OptimizedMul) {
+    optimized_mul();
+}
 
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_matrix,
