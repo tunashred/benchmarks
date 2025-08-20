@@ -74,6 +74,7 @@ void AlignedMatrix<long>::optimized_mul() {
 
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&matrix_B[k * size + j]));
 
+                // the multiply is on int because my CPU does not support AVX512
                 c = _mm256_add_epi64(c, _mm256_mullo_epi32(a, b));
 
                 _mm256_store_si256(reinterpret_cast<__m256i*>(&matrix_C[i * size + j]), c);
