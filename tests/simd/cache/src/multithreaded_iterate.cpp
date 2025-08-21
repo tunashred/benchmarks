@@ -26,7 +26,7 @@ void AlignedArrayShared<T>::TearDown() {
 
 template <>
 void sequential_iterate<int>(size_t start, size_t end, const AlignedArrayShared<int>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = start; j + SIMD_INT_WIDTH <= end; j += SIMD_INT_WIDTH) {
             __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
     
@@ -39,7 +39,7 @@ void sequential_iterate<int>(size_t start, size_t end, const AlignedArrayShared<
 
 template <>
 void sequential_iterate<long>(size_t start, size_t end, const AlignedArrayShared<long>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = start; j + SIMD_LONG_WIDTH <= end; j += SIMD_LONG_WIDTH) {
             __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
 
@@ -52,7 +52,7 @@ void sequential_iterate<long>(size_t start, size_t end, const AlignedArrayShared
 
 template <>
 void sequential_iterate<double>(size_t start, size_t end, const AlignedArrayShared<double>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = start; j + SIMD_DOUBLE_WIDTH <= end; j += SIMD_DOUBLE_WIDTH) {
             __m256d vec = _mm256_load_pd(test->array + j);
 

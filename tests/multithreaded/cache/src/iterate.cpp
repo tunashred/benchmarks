@@ -22,7 +22,7 @@ void CArrayShared<T>::TearDown() {
 
 template <typename T>
 void sequential_iterate(size_t start, size_t end, const CArrayShared<T>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = start; j < end; j++) {
             test->array[j]++;
         }
@@ -31,7 +31,7 @@ void sequential_iterate(size_t start, size_t end, const CArrayShared<T>* test) {
 
 template <typename T>
 void reverse_sequential_iterate(size_t start, size_t end, const CArrayShared<T>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (int j = (int)end - 1; j >= (int)start; j--) {
             test->array[j]++;
         }
@@ -40,7 +40,7 @@ void reverse_sequential_iterate(size_t start, size_t end, const CArrayShared<T>*
 
 template <typename T>
 void neighbour_sequential_iterate(size_t size, size_t start, size_t increment, const CArrayShared<T>* test) {
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = start; j + start < size - 1; j += increment) {
             test->array[j]++;
         }
@@ -52,7 +52,7 @@ void jump_iterate(size_t start, size_t end, const CArrayShared<T>* test) {
     constexpr size_t element_size = sizeof(T),
                      jump_size    = CACHE_LINE / element_size;
     
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t k = start; k < jump_size; k++) {
             size_t j = k;
             while (j < end) {
@@ -69,7 +69,7 @@ void reverse_jump_iterate(size_t start, size_t end, const CArrayShared<T>* test)
     constexpr size_t element_size = sizeof(T),
                      jump_size    = CACHE_LINE / element_size;
 
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t k = 0; k < jump_size; k++) {
             size_t remainder = (end - 1 - start - k) % jump_size;
             int j = (int)(end - 1 - remainder);

@@ -29,7 +29,7 @@ using AlignedArrayDouble = AlignedArray<double>;
 TEST_P(AlignedArrayInt, SequentialIterate) {
     size_t size = this->GetParam();
 
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = 0; j + SIMD_INT_WIDTH <= size; j += SIMD_INT_WIDTH) {
             __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
     
@@ -43,7 +43,7 @@ TEST_P(AlignedArrayInt, SequentialIterate) {
 TEST_P(AlignedArrayLong, SequentialIterate) {
     size_t size = this->GetParam();
 
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = 0; j + SIMD_LONG_WIDTH <= size; j += SIMD_LONG_WIDTH) {
             __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
 
@@ -57,7 +57,7 @@ TEST_P(AlignedArrayLong, SequentialIterate) {
 TEST_P(AlignedArrayDouble, SequentialIterate) {
     size_t size = this->GetParam();
 
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = 0; j + SIMD_DOUBLE_WIDTH <= size; j += SIMD_DOUBLE_WIDTH) {
             __m256d vec = _mm256_load_pd(array + j);
 

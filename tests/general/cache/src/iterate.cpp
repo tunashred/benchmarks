@@ -21,7 +21,7 @@ void CArray<T>::TearDown() {
 template <typename T>
 void sequential_iterate(const CArray<T>* test) {
     size_t size = test->GetParam();
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = 0; j < size; j++) {
             test->array[j]++;
         }
@@ -31,7 +31,7 @@ void sequential_iterate(const CArray<T>* test) {
 template <typename T>
 void reverse_sequential_iterate(const CArray<T>* test) {
     size_t size = test->GetParam();
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = size - 1; j > 0; j--) {
             test->array[j]++;
         }
@@ -45,7 +45,7 @@ void jump_iterate(const CArray<T>* test) {
     
     size_t size = test->GetParam();
     
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t k = 0; k < jump_size; k++) {
             size_t j = k;
             while (j < size) {
@@ -64,7 +64,7 @@ void reverse_jump_iterate(const CArray<T>* test) {
     
     size_t size = test->GetParam();
 
-    for (size_t i = 0; i < LOOP_COUNT; i++) {
+    for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t k = 0; k < jump_size; k++) {
             size_t j = size - k - 1;
             while (j < size) {
