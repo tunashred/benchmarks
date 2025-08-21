@@ -23,13 +23,15 @@ set(COMPILE_FLAGS
     -Wconversion
     -Wunreachable-code
     -fstack-usage
+    -march=native
+    -mtune=native
     -mavx
     -mavx2
 )
 
 set(RELEASE_FLAGS
-    -D_FORTIFY_SOURCE=2
     -O3
+    -D_FORTIFY_SOURCE=2
 )
 
 set(DEBUG_FLAGS
@@ -133,6 +135,8 @@ add_subdirectory(tests)
 # -Wconversion: Warns about implicit type conversions that can lead to data loss
 # -Wunreachable-code: Detects code that will never be executed
 # -fstack-usage: Generates .su files for each source file which contains stack usage info of each function
+# -march=native: Makes use of host CPU specific instructions
+# -mtune=native: Optimizes instruction scheduling, prefetching, branch prediction for host CPU
 #
 # Link flags
 # -lm: needed for math.h
@@ -140,8 +144,9 @@ add_subdirectory(tests)
 # -lprofiler: For gperftools
 #
 # Release flags
-# -D_FORTIFY_SOURCE=2: Runtime buffer overflow detection
 # -O3: Max optimization level
+# -D_FORTIFY_SOURCE=2: Runtime buffer overflow detection
+# -funroll-loops: Unrolls loops
 #
 # Debug flags
 # -g: Include debug info
