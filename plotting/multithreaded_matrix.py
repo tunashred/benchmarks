@@ -65,6 +65,62 @@ matrix_data = {
     },
 }
 
+matrix_as_array_data = {
+    "Int": {
+        2: {
+            "NaiveMul": [(512, 232), (1024, 1580), (2048, 13308), (4096, 111369), (8192, 882399)],
+            "OptimizedMul": [(512, 4), (1024, 35), (2048, 269), (4096, 2462), (8192, 21827)],
+        },
+        4: {
+            "NaiveMul": [(512, 117), (1024, 820), (2048, 7554), (4096, 58074), (8192, 464269)],
+            "OptimizedMul": [(512, 4), (1024, 21), (2048, 167), (4096, 1408), (8192, 10173)],
+        },
+        8: {
+            "NaiveMul": [(512, 68), (1024, 629), (2048, 5062), (4096, 39025), (8192, 319374)],
+            "OptimizedMul": [(512, 2), (1024, 14), (2048, 116), (4096, 1008), (8192, 9196)],
+        },
+        12: {
+            "NaiveMul": [(512, 69), (1024, 583), (2048, 4534), (4096, 34221), (8192, 283027)],
+            "OptimizedMul": [(512, 2), (1024, 15), (2048, 105), (4096, 1047), (8192, 9520)],
+        },
+    },
+    "Long": {
+        2: {
+            "NaiveMul": [(512, 212), (1024, 1624), (2048, 14027), (4096, 108050), (8192, 1031067)],
+            "OptimizedMul": [(512, 12), (1024, 92), (2048, 830), (4096, 7282), (8192, 65527)],
+        },
+        4: {
+            "NaiveMul": [(512, 105), (1024, 824), (2048, 7179), (4096, 54775), (8192, 533921)],
+            "OptimizedMul": [(512, 8), (1024, 52), (2048, 485), (4096, 3506), (8192, 30237)],
+        },
+        8: {
+            "NaiveMul": [(512, 76), (1024, 624), (2048, 5351), (4096, 40373), (8192, 401814)],
+            "OptimizedMul": [(512, 6), (1024, 37), (2048, 337), (4096, 2926), (8192, 24866)],
+        },
+        12: {
+            "NaiveMul": [(512, 70), (1024, 510), (2048, 3874), (4096, 34442), (8192, 337268)],
+            "OptimizedMul": [(512, 5), (1024, 38), (2048, 317), (4096, 2795), (8192, 22122)],
+        },
+    },
+    "Double": {
+        2: {
+            "NaiveMul": [(512, 214), (1024, 1652), (2048, 15785), (4096, 110847), (8192, 1065871)],
+            "OptimizedMul": [(512, 7), (1024, 62), (2048, 601), (4096, 5487), (8192, 53597)],
+        },
+        4: {
+            "NaiveMul": [(512, 104), (1024, 837), (2048, 8042), (4096, 56453), (8192, 554700)],
+            "OptimizedMul": [(512, 6), (1024, 35), (2048, 361), (4096, 2643), (8192, 23109)],
+        },
+        8: {
+            "NaiveMul": [(512, 75), (1024, 601), (2048, 5371), (4096, 41607), (8192, 394149)],
+            "OptimizedMul": [(512, 4), (1024, 28), (2048, 263), (4096, 2337), (8192, 21221)],
+        },
+        12: {
+            "NaiveMul": [(512, 60), (1024, 484), (2048, 3984), (4096, 34503), (8192, 324134)],
+            "OptimizedMul": [(512, 4), (1024, 25), (2048, 264), (4096, 2370), (8192, 19050)],
+        },
+    },
+}
 
 def calculate_speedup(base_times, comparison_times):
     """Calculate speedup ratio between two timing datasets"""
@@ -74,11 +130,9 @@ def calculate_speedup(base_times, comparison_times):
             speedups.append((size_b, time_b / time_c))
     return speedups
 
-
 def calculate_efficiency(speedup_data, num_threads):
     """Calculate parallel efficiency (speedup / num_threads)"""
     return [(size, speedup / num_threads) for size, speedup in speedup_data]
-
 
 def calculate_gflops(matrix_size, time):
     """Calculate GFLOPS for matrix multiplication (2*n^3 operations)"""
@@ -86,7 +140,6 @@ def calculate_gflops(matrix_size, time):
     if time > 0:
         return operations / (time * 1e9)  # Convert to GFLOPS
     return 0
-
 
 def calculate_optimization_factor(naive_data, optimized_data):
     """Calculate how much faster optimized version is vs naive"""
@@ -96,461 +149,260 @@ def calculate_optimization_factor(naive_data, optimized_data):
             factors.append((size_n, time_n / time_o))
     return factors
 
+def get_data_from_source(source, data_type, threads, algorithm):
+    """Helper function to get data from either matrix_data or matrix_as_array_data"""
+    datasets = {
+        'matrix': matrix_data,
+        'array': matrix_as_array_data
+    }
+    
+    if source in datasets and data_type in datasets[source] and threads in datasets[source][data_type]:
+        return datasets[source][data_type][threads].get(algorithm, [])
+    return []
 
-# 1. Algorithm Comparison: Naive vs Optimized
-def plot_algorithm_comparison():
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    fig.suptitle('Matrix Multiplication: Algorithm Performance Comparison', fontsize=16, fontweight='bold')
+# 1. Implementation Comparison: Matrix vs Array vs Algorithms
+def plot_implementation_comparison():
+    fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+    fig.suptitle('Implementation Comparison: Matrix Objects vs Arrays vs Algorithms', fontsize=16, fontweight='bold')
 
-    for i, data_type in enumerate(['Int', 'Long', 'Double']):
-        if i >= 2:  # We have 3 data types but only 4 subplots, so we'll use 2x2 and skip one
-            ax = axes[1][1] if i == 2 else None
-        else:
-            ax = axes[i // 2][i % 2] if i < 2 else axes[1][0]
+    data_types = ['Int', 'Long', 'Double']
+    threads = 8
 
-        if ax is None:
-            continue
-
-        threads = 8  # Focus on 8 threads for comparison
-        if data_type in matrix_data and threads in matrix_data[data_type]:
-            # Naive algorithm
-            naive_data = matrix_data[data_type][threads]["NaiveMul"]
-            sizes_n, times_n = zip(*naive_data)
+    for i, data_type in enumerate(data_types):
+        # Top row: Algorithm comparison within matrix implementation
+        ax = axes[0][i]
+        
+        matrix_naive = get_data_from_source('matrix', data_type, threads, 'NaiveMul')
+        matrix_opt = get_data_from_source('matrix', data_type, threads, 'OptimizedMul')
+        
+        if matrix_naive:
+            sizes_n, times_n = zip(*matrix_naive)
             ax.loglog(sizes_n, times_n, 'o-', linewidth=3, markersize=8,
-                      label='Naive Algorithm', color='red', alpha=0.8)
-
-            # Optimized algorithm
-            opt_data = matrix_data[data_type][threads]["OptimizedMul"]
-            sizes_o, times_o = zip(*opt_data)
+                      label='Matrix Naive', color='red', alpha=0.8)
+        
+        if matrix_opt:
+            sizes_o, times_o = zip(*matrix_opt)
             ax.loglog(sizes_o, times_o, 's-', linewidth=3, markersize=8,
-                      label='Optimized Algorithm', color='blue', alpha=0.8)
-
-            # Theoretical O(n^3) line for reference
-            theoretical_sizes = np.array(sizes_n)
-            theoretical_times = times_n[0] * (theoretical_sizes / sizes_n[0]) ** 3
-            ax.loglog(theoretical_sizes, theoretical_times, '--', alpha=0.5,
-                      color='gray', label='O(n³) Reference')
-
-        ax.set_xlabel('Matrix Size (N×N)', fontweight='bold', fontsize=12)
-        ax.set_ylabel('Execution Time (time units)', fontweight='bold', fontsize=12)
-        ax.set_title(f'{data_type} Data Type (8 Threads)', fontweight='bold', fontsize=14)
-        ax.legend(fontsize=11)
-        ax.grid(True, alpha=0.3)
-        ax.set_xticks([512, 1024, 2048, 4096, 8192])
-        ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
-
-    # Remove the unused subplot
-    axes[1][0].remove()
-
-    plt.tight_layout()
-    plt.show()
-
-
-# 2. Scalability Analysis - Performance vs Matrix Size
-def plot_scalability_analysis():
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('Scalability Analysis: Thread Count vs Matrix Size Performance', fontsize=16, fontweight='bold')
-
-    algorithms = ['NaiveMul', 'OptimizedMul']
-    data_types = ['Int', 'Long', 'Double']
-
-    for i, algorithm in enumerate(algorithms):
-        for j, data_type in enumerate(data_types):
-            ax = axes[i][j]
-
-            for threads in [2, 4, 8, 12]:
-                if data_type in matrix_data and threads in matrix_data[data_type]:
-                    data = matrix_data[data_type][threads][algorithm]
-                    sizes, times = zip(*data)
-                    ax.loglog(sizes, times, 'o-', linewidth=2, markersize=6,
-                              label=f'{threads} threads', alpha=0.8)
-
-            ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-            ax.set_ylabel('Execution Time (time units)', fontweight='bold')
-            ax.set_title(f'{data_type} - {algorithm}', fontweight='bold')
-            ax.legend()
-            ax.grid(True, alpha=0.3)
-            ax.set_xticks([512, 1024, 2048, 4096, 8192])
-            ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
-
-    plt.tight_layout()
-    plt.show()
-
-
-# 3. Parallel Speedup Analysis
-def plot_speedup_analysis():
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('Parallel Speedup Analysis (Relative to 2 Threads)', fontsize=16, fontweight='bold')
-
-    algorithms = ['NaiveMul', 'OptimizedMul']
-    data_types = ['Int', 'Long', 'Double']
-
-    for i, algorithm in enumerate(algorithms):
-        for j, data_type in enumerate(data_types):
-            ax = axes[i][j]
-
-            if data_type in matrix_data and 2 in matrix_data[data_type]:
-                baseline_data = matrix_data[data_type][2][algorithm]
-
-                for threads in [4, 8, 12]:
-                    if threads in matrix_data[data_type]:
-                        comparison_data = matrix_data[data_type][threads][algorithm]
-                        speedup_data = calculate_speedup(baseline_data, comparison_data)
-
-                        if speedup_data:
-                            sizes, speedups = zip(*speedup_data)
-                            ax.semilogx(sizes, speedups, 'o-', linewidth=2, markersize=6,
-                                        label=f'{threads} threads', alpha=0.8)
-
-                # Add ideal speedup lines
-                sizes = [512, 1024, 2048, 4096, 8192]
-                for threads in [4, 8, 12]:
-                    ideal_speedup = [threads / 2] * len(sizes)
-                    ax.semilogx(sizes, ideal_speedup, '--', alpha=0.4,
-                                label=f'Ideal {threads}t' if j == 0 else "")
-
-            ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-            ax.set_ylabel('Speedup Factor', fontweight='bold')
-            ax.set_title(f'{data_type} - {algorithm}', fontweight='bold')
-            ax.legend()
-            ax.grid(True, alpha=0.3)
-            ax.set_xticks([512, 1024, 2048, 4096, 8192])
-            ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
-
-    plt.tight_layout()
-    plt.show()
-
-
-# 4. GFLOPS Performance Analysis
-def plot_gflops_analysis():
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    fig.suptitle('GFLOPS Performance Analysis', fontsize=16, fontweight='bold')
-
-    # Plot 1: GFLOPS vs Matrix Size for different algorithms
-    ax = axes[0][0]
-    data_type = 'Int'  # Focus on Int for this comparison
-    threads = 8
-
-    if data_type in matrix_data and threads in matrix_data[data_type]:
-        for algorithm in ['NaiveMul', 'OptimizedMul']:
-            data = matrix_data[data_type][threads][algorithm]
-            gflops_data = [(size, calculate_gflops(size, time)) for size, time in data]
-            sizes, gflops = zip(*gflops_data)
-            ax.semilogx(sizes, gflops, 'o-', linewidth=2, markersize=6,
-                        label=algorithm, alpha=0.8)
-
-    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('GFLOPS', fontweight='bold')
-    ax.set_title(f'GFLOPS Comparison ({data_type}, 8 threads)', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_xticks([512, 1024, 2048, 4096, 8192])
-    ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
-
-    # Plot 2: GFLOPS vs Thread Count
-    ax = axes[0][1]
-    algorithm = 'OptimizedMul'
-    matrix_size = 4096  # Focus on large matrix
-
-    for data_type in ['Int', 'Long', 'Double']:
-        thread_gflops = []
-        thread_counts = []
-
-        for threads in [2, 4, 8, 12]:
-            if data_type in matrix_data and threads in matrix_data[data_type]:
-                data = matrix_data[data_type][threads][algorithm]
-                for size, time in data:
-                    if size == matrix_size:
-                        gflops = calculate_gflops(size, time)
-                        thread_gflops.append(gflops)
-                        thread_counts.append(threads)
-                        break
-
-        if thread_gflops:
-            ax.plot(thread_counts, thread_gflops, 'o-', linewidth=2, markersize=6,
-                    label=data_type, alpha=0.8)
-
-    ax.set_xlabel('Thread Count', fontweight='bold')
-    ax.set_ylabel('GFLOPS', fontweight='bold')
-    ax.set_title(f'GFLOPS vs Threads ({algorithm}, {matrix_size}×{matrix_size})', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-
-    # Plot 3: Peak GFLOPS by Data Type
-    ax = axes[1][0]
-    data_types = ['Int', 'Long', 'Double']
-    algorithms = ['NaiveMul', 'OptimizedMul']
-
-    x_pos = np.arange(len(data_types))
-    width = 0.35
-
-    for i, algorithm in enumerate(algorithms):
-        peak_gflops = []
-        for data_type in data_types:
-            max_gflops = 0
-            for threads in [2, 4, 8, 12]:
-                if data_type in matrix_data and threads in matrix_data[data_type]:
-                    data = matrix_data[data_type][threads][algorithm]
-                    for size, time in data:
-                        gflops = calculate_gflops(size, time)
-                        max_gflops = max(max_gflops, gflops)
-            peak_gflops.append(max_gflops)
-
-        ax.bar(x_pos + i * width, peak_gflops, width, label=algorithm, alpha=0.8)
-
-    ax.set_xlabel('Data Type', fontweight='bold')
-    ax.set_ylabel('Peak GFLOPS', fontweight='bold')
-    ax.set_title('Peak GFLOPS by Data Type', fontweight='bold')
-    ax.set_xticks(x_pos + width / 2)
-    ax.set_xticklabels(data_types)
-    ax.legend()
-    ax.grid(True, alpha=0.3, axis='y')
-
-    # Plot 4: Optimization Factor
-    ax = axes[1][1]
-    data_type = 'Int'
-    threads = 8
-
-    if data_type in matrix_data and threads in matrix_data[data_type]:
-        naive_data = matrix_data[data_type][threads]['NaiveMul']
-        opt_data = matrix_data[data_type][threads]['OptimizedMul']
-        opt_factors = calculate_optimization_factor(naive_data, opt_data)
-
-        sizes, factors = zip(*opt_factors)
-        ax.semilogx(sizes, factors, 'o-', linewidth=3, markersize=8,
-                    color='green', alpha=0.8)
-
-    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('Optimization Factor (Naive/Optimized)', fontweight='bold')
-    ax.set_title(f'Optimization Effectiveness ({data_type}, 8 threads)', fontweight='bold')
-    ax.grid(True, alpha=0.3)
-    ax.set_xticks([512, 1024, 2048, 4096, 8192])
-    ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
-
-    plt.tight_layout()
-    plt.show()
-
-
-# 5. Memory Efficiency Analysis
-def plot_memory_efficiency():
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-    fig.suptitle('Memory Efficiency: Data Type Performance Comparison', fontsize=16, fontweight='bold')
-
-    algorithms = ['NaiveMul', 'OptimizedMul']
-    threads = 8
-
-    for i, algorithm in enumerate(algorithms[:2]):  # Only plot first 2 algorithms
-        ax = axes[i]
-
-        for data_type in ['Int', 'Long', 'Double']:
-            if data_type in matrix_data and threads in matrix_data[data_type]:
-                data = matrix_data[data_type][threads][algorithm]
-                sizes, times = zip(*data)
-
-                # Calculate memory throughput (bytes processed per time)
-                type_sizes = {'Int': 4, 'Long': 8, 'Double': 8}  # bytes per element
-                memory_throughput = []
-                for size, time in data:
-                    total_bytes = 3 * (size ** 2) * type_sizes[data_type]  # 2 input + 1 output matrix
-                    if time > 0:
-                        throughput = total_bytes / time / 1e6  # MB/s
-                        memory_throughput.append(throughput)
-                    else:
-                        memory_throughput.append(0)
-
-                ax.semilogx(sizes, memory_throughput, 'o-', linewidth=2, markersize=6,
-                            label=data_type, alpha=0.8)
+                      label='Matrix Optimized', color='blue', alpha=0.8)
 
         ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-        ax.set_ylabel('Memory Throughput (MB/s)', fontweight='bold')
-        ax.set_title(f'{algorithm} - Memory Efficiency', fontweight='bold')
+        ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+        ax.set_title(f'{data_type} - Matrix Implementation', fontweight='bold')
         ax.legend()
         ax.grid(True, alpha=0.3)
         ax.set_xticks([512, 1024, 2048, 4096, 8192])
         ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
-    # Plot 3: Parallel Efficiency
-    ax = axes[2]
-    algorithm = 'OptimizedMul'
-    data_type = 'Int'
+        # Bottom row: Implementation comparison (Matrix vs Array)
+        ax = axes[1][i]
+        
+        array_naive = get_data_from_source('array', data_type, threads, 'NaiveMul')
+        array_opt = get_data_from_source('array', data_type, threads, 'OptimizedMul')
+        
+        if matrix_opt:
+            ax.loglog(sizes_o, times_o, 's-', linewidth=2, markersize=6,
+                      label='Matrix Optimized', color='blue', alpha=0.8)
+        
+        if array_naive:
+            sizes_an, times_an = zip(*array_naive)
+            ax.loglog(sizes_an, times_an, '^-', linewidth=2, markersize=6,
+                      label='Array Naive', color='orange', alpha=0.8)
+        
+        if array_opt:
+            sizes_ao, times_ao = zip(*array_opt)
+            ax.loglog(sizes_ao, times_ao, 'v-', linewidth=2, markersize=6,
+                      label='Array Optimized', color='green', alpha=0.8)
 
-    if data_type in matrix_data and 2 in matrix_data[data_type]:
-        baseline_data = matrix_data[data_type][2][algorithm]
-
-        for threads in [4, 8, 12]:
-            if threads in matrix_data[data_type]:
-                comparison_data = matrix_data[data_type][threads][algorithm]
-                speedup_data = calculate_speedup(baseline_data, comparison_data)
-                efficiency_data = calculate_efficiency(speedup_data, threads / 2)
-
-                if efficiency_data:
-                    sizes, efficiencies = zip(*efficiency_data)
-                    ax.semilogx(sizes, [e * 100 for e in efficiencies], 'o-',
-                                linewidth=2, markersize=6, label=f'{threads} threads', alpha=0.8)
-
-    ax.axhline(y=100, color='red', linestyle='--', alpha=0.7, label='Perfect Efficiency')
-    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('Parallel Efficiency (%)', fontweight='bold')
-    ax.set_title(f'Parallel Efficiency ({data_type}, {algorithm})', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_ylim(0, 150)
-
-    plt.tight_layout()
-    plt.show()
-
-
-# 6. Performance Heatmaps
-def plot_performance_heatmaps():
-    fig, axes = plt.subplots(2, 3, figsize=(20, 12))
-    fig.suptitle('Performance Heatmaps: Execution Time by Thread Count and Matrix Size', fontsize=16, fontweight='bold')
-
-    algorithms = ['NaiveMul', 'OptimizedMul']
-    data_types = ['Int', 'Long', 'Double']
-    matrix_sizes = [512, 1024, 2048, 4096, 8192]
-    thread_counts = [2, 4, 8, 12]
-
-    for i, algorithm in enumerate(algorithms):
-        for j, data_type in enumerate(data_types):
-            ax = axes[i][j]
-
-            # Create matrix for heatmap
-            performance_matrix = np.zeros((len(thread_counts), len(matrix_sizes)))
-
-            for t_idx, threads in enumerate(thread_counts):
-                if data_type in matrix_data and threads in matrix_data[data_type]:
-                    data = matrix_data[data_type][threads][algorithm]
-                    for size, time in data:
-                        if size in matrix_sizes:
-                            s_idx = matrix_sizes.index(size)
-                            performance_matrix[t_idx][s_idx] = time
-
-            # Create heatmap with log scale
-            log_matrix = np.log10(performance_matrix + 1)  # +1 to avoid log(0)
-            im = ax.imshow(log_matrix, cmap='YlOrRd', aspect='auto')
-
-            # Set ticks and labels
-            ax.set_xticks(range(len(matrix_sizes)))
-            ax.set_xticklabels([f'{size}' for size in matrix_sizes])
-            ax.set_yticks(range(len(thread_counts)))
-            ax.set_yticklabels(thread_counts)
-
-            ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-            ax.set_ylabel('Thread Count', fontweight='bold')
-            ax.set_title(f'{data_type} - {algorithm}', fontweight='bold')
-
-            # Add colorbar
-            cbar = plt.colorbar(im, ax=ax)
-            cbar.set_label('log₁₀(Execution Time)')
+        ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+        ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+        ax.set_title(f'{data_type} - Implementation Comparison', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks([512, 1024, 2048, 4096, 8192])
+        ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
     plt.tight_layout()
     plt.show()
 
-
-# 8. Cache Performance Analysis
-def plot_cache_analysis():
+# 2. Cross-Implementation Performance Analysis
+def plot_cross_implementation_analysis():
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    plt.subplots_adjust(hspace=0.4)
-    fig.suptitle('Cache Performance Analysis: Memory Access Patterns', fontsize=16, fontweight='bold')
+    fig.suptitle('Cross-Implementation Performance Analysis', fontsize=16, fontweight='bold')
 
-    # Plot 1: Performance per element vs matrix size (cache efficiency indicator)
+    # Plot 1: Best of each implementation type
     ax = axes[0][0]
-    algorithm = 'OptimizedMul'
+    data_type = 'Int'
     threads = 8
-
-    for data_type in ['Int', 'Long', 'Double']:
-        if data_type in matrix_data and threads in matrix_data[data_type]:
-            data = matrix_data[data_type][threads][algorithm]
-            perf_per_element = [(size, time / (size * size)) for size, time in data if time > 0]
-            sizes, perf = zip(*perf_per_element)
-            ax.loglog(sizes, perf, 'o-', linewidth=2, markersize=6,
-                      label=data_type, alpha=0.8)
-
+    
+    implementations = {
+        'Matrix Naive': get_data_from_source('matrix', data_type, threads, 'NaiveMul'),
+        'Matrix Optimized': get_data_from_source('matrix', data_type, threads, 'OptimizedMul'),
+        'Array Naive': get_data_from_source('array', data_type, threads, 'NaiveMul'),
+        'Array Optimized': get_data_from_source('array', data_type, threads, 'OptimizedMul')
+    }
+    
+    colors = {'Matrix Naive': 'red', 'Matrix Optimized': 'blue', 
+              'Array Naive': 'orange', 'Array Optimized': 'green'}
+    markers = {'Matrix Naive': 'o', 'Matrix Optimized': 's', 
+               'Array Naive': '^', 'Array Optimized': 'v'}
+    
+    for impl_name, data in implementations.items():
+        if data:
+            sizes, times = zip(*data)
+            ax.loglog(sizes, times, f'{markers[impl_name]}-', linewidth=2, markersize=6,
+                      label=impl_name, color=colors[impl_name], alpha=0.8)
+    
     ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('Time per Element', fontweight='bold')
-    ax.set_title('Cache Efficiency Indicator', fontweight='bold')
+    ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+    ax.set_title(f'All Implementations ({data_type}, {threads} threads)', fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_xticks([512, 1024, 2048, 4096, 8192])
     ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
-    # Plot 2: Algorithm efficiency comparison across sizes
+    # Plot 2: Implementation speedup factors
     ax = axes[0][1]
-    data_type = 'Int'
-    threads = 8
-
-    if data_type in matrix_data and threads in matrix_data[data_type]:
-        naive_data = matrix_data[data_type][threads]['NaiveMul']
-        opt_data = matrix_data[data_type][threads]['OptimizedMul']
-
-        # Calculate operations per second
-        naive_ops = [(size, 2 * (size ** 3) / time) for size, time in naive_data if time > 0]
-        opt_ops = [(size, 2 * (size ** 3) / time) for size, time in opt_data if time > 0]
-
-        sizes_n, ops_n = zip(*naive_ops)
-        sizes_o, ops_o = zip(*opt_ops)
-
-        ax.loglog(sizes_n, ops_n, 'o-', linewidth=2, markersize=6,
-                  label='Naive', alpha=0.8, color='red')
-        ax.loglog(sizes_o, ops_o, 's-', linewidth=2, markersize=6,
-                  label='Optimized', alpha=0.8, color='blue')
+    
+    matrix_naive = get_data_from_source('matrix', data_type, threads, 'NaiveMul')
+    matrix_opt = get_data_from_source('matrix', data_type, threads, 'OptimizedMul')
+    array_naive = get_data_from_source('array', data_type, threads, 'NaiveMul')
+    array_opt = get_data_from_source('array', data_type, threads, 'OptimizedMul')
+    
+    if matrix_naive and matrix_opt:
+        matrix_factors = calculate_optimization_factor(matrix_naive, matrix_opt)
+        sizes, factors = zip(*matrix_factors)
+        ax.semilogx(sizes, factors, 's-', linewidth=2, markersize=6,
+                    label='Matrix: Opt vs Naive', color='blue', alpha=0.8)
+    
+    if array_naive and array_opt:
+        array_factors = calculate_optimization_factor(array_naive, array_opt)
+        sizes, factors = zip(*array_factors)
+        ax.semilogx(sizes, factors, 'v-', linewidth=2, markersize=6,
+                    label='Array: Opt vs Naive', color='green', alpha=0.8)
+    
+    if matrix_opt and array_opt:
+        impl_factors = calculate_optimization_factor(matrix_opt, array_opt)
+        sizes, factors = zip(*impl_factors)
+        ax.semilogx(sizes, factors, 'o-', linewidth=2, markersize=6,
+                    label='Array vs Matrix (Opt)', color='purple', alpha=0.8)
 
     ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('Operations per Time Unit', fontweight='bold')
-    ax.set_title(f'Computational Efficiency ({data_type})', fontweight='bold')
+    ax.set_ylabel('Speedup Factor', fontweight='bold')
+    ax.set_title('Implementation Speedup Comparison', fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_xticks([512, 1024, 2048, 4096, 8192])
     ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
-    # Plot 3: Memory bandwidth utilization
+    # Plot 3: GFLOPS comparison across implementations
     ax = axes[1][0]
-    algorithm = 'OptimizedMul'
-    threads = 8
-
-    for data_type in ['Int', 'Long', 'Double']:
-        type_sizes = {'Int': 4, 'Long': 8, 'Double': 8}
-        if data_type in matrix_data and threads in matrix_data[data_type]:
-            data = matrix_data[data_type][threads][algorithm]
-            bandwidth = []
-            sizes = []
-
-            for size, time in data:
-                if time > 0:
-                    # Estimate memory accesses: 2*N^2 reads + N^2 writes per iteration, N iterations
-                    total_bytes = size * (2 * size * size + size * size) * type_sizes[data_type]
-                    bw = total_bytes / time / 1e6  # MB/s
-                    bandwidth.append(bw)
-                    sizes.append(size)
-
-            if sizes:
-                ax.semilogx(sizes, bandwidth, 'o-', linewidth=2, markersize=6,
-                            label=data_type, alpha=0.8)
+    
+    for impl_name, data in implementations.items():
+        if data:
+            gflops_data = [(size, calculate_gflops(size, time)) for size, time in data]
+            sizes, gflops = zip(*gflops_data)
+            ax.semilogx(sizes, gflops, f'{markers[impl_name]}-', linewidth=2, markersize=6,
+                        label=impl_name, color=colors[impl_name], alpha=0.8)
 
     ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
-    ax.set_ylabel('Memory Bandwidth (MB/s)', fontweight='bold')
-    ax.set_title('Memory Bandwidth Utilization', fontweight='bold')
+    ax.set_ylabel('GFLOPS', fontweight='bold')
+    ax.set_title('GFLOPS Comparison Across Implementations', fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_xticks([512, 1024, 2048, 4096, 8192])
     ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
-    # Plot 4: Thread scaling efficiency
+    # Plot 4: Memory efficiency comparison
     ax = axes[1][1]
-    algorithm = 'OptimizedMul'
-    data_type = 'Int'
+    
+    type_sizes = {'Int': 4, 'Long': 8, 'Double': 8}
+    
+    for impl_name, data in implementations.items():
+        if data and 'Optimized' in impl_name:  # Focus on optimized versions
+            memory_throughput = []
+            sizes_list = []
+            for size, time in data:
+                total_bytes = 3 * (size ** 2) * type_sizes[data_type]
+                if time > 0:
+                    throughput = total_bytes / time / 1e6  # MB/s
+                    memory_throughput.append(throughput)
+                    sizes_list.append(size)
+            
+            if memory_throughput:
+                ax.semilogx(sizes_list, memory_throughput, f'{markers[impl_name]}-',
+                            linewidth=2, markersize=6, label=impl_name,
+                            color=colors[impl_name], alpha=0.8)
 
-    sizes_to_plot = [2048, 4096, 8192]
-    colors = ['blue', 'green', 'red']
+    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+    ax.set_ylabel('Memory Throughput (MB/s)', fontweight='bold')
+    ax.set_title('Memory Efficiency: Optimized Implementations', fontweight='bold')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_xticks([512, 1024, 2048, 4096, 8192])
+    ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
 
-    for i, matrix_size in enumerate(sizes_to_plot):
+    plt.tight_layout()
+    plt.show()
+
+# 3. Comprehensive Scalability Analysis
+def plot_comprehensive_scalability():
+    fig, axes = plt.subplots(3, 2, figsize=(16, 18))
+    fig.suptitle('Comprehensive Scalability Analysis: All Implementations', fontsize=16, fontweight='bold')
+
+    data_sources = [('matrix', matrix_data), ('array', matrix_as_array_data)]
+    
+    for col, (source_name, source_data) in enumerate(data_sources):
+        # Plot 1: Thread scaling for naive algorithms
+        ax = axes[0][col]
+        algorithm = 'NaiveMul'
+        data_type = 'Int'
+        
+        for threads in [2, 4, 8, 12]:
+            data = get_data_from_source(source_name, data_type, threads, algorithm)
+            if data:
+                sizes, times = zip(*data)
+                ax.loglog(sizes, times, 'o-', linewidth=2, markersize=6,
+                          label=f'{threads} threads', alpha=0.8)
+
+        ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+        ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+        ax.set_title(f'{source_name.title()} - {algorithm} Scaling', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks([512, 1024, 2048, 4096, 8192])
+        ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
+
+        # Plot 2: Thread scaling for optimized algorithms
+        ax = axes[1][col]
+        algorithm = 'OptimizedMul'
+        
+        for threads in [2, 4, 8, 12]:
+            data = get_data_from_source(source_name, data_type, threads, algorithm)
+            if data:
+                sizes, times = zip(*data)
+                ax.loglog(sizes, times, 's-', linewidth=2, markersize=6,
+                          label=f'{threads} threads', alpha=0.8)
+
+        ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+        ax.set_ylabel('Execution Time (time units)', fontweight='bold')
+        ax.set_title(f'{source_name.title()} - {algorithm} Scaling', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks([512, 1024, 2048, 4096, 8192])
+        ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
+
+        # Plot 3: Parallel efficiency
+        ax = axes[2][col]
+        algorithm = 'OptimizedMul'
+        matrix_size = 4096
+        
         thread_counts = []
         efficiencies = []
         baseline_time = None
-
+        
         for threads in [2, 4, 8, 12]:
-            if data_type in matrix_data and threads in matrix_data[data_type]:
-                data = matrix_data[data_type][threads][algorithm]
+            data = get_data_from_source(source_name, data_type, threads, algorithm)
+            if data:
                 for size, time in data:
                     if size == matrix_size:
                         if baseline_time is None:
@@ -559,86 +411,292 @@ def plot_cache_analysis():
                         else:
                             speedup = baseline_time / time
                             efficiency = (speedup / (threads / 2)) * 100
-
+                        
                         thread_counts.append(threads)
                         efficiencies.append(efficiency)
                         break
 
         if thread_counts:
-            ax.plot(thread_counts, efficiencies, 'o-', linewidth=2, markersize=6,
-                    label=f'{matrix_size}×{matrix_size}', color=colors[i], alpha=0.8)
+            ax.plot(thread_counts, efficiencies, 'o-', linewidth=3, markersize=8, alpha=0.8)
+            ax.axhline(y=100, color='red', linestyle='--', alpha=0.7, label='Perfect Efficiency')
 
-    ax.axhline(y=100, color='black', linestyle='--', alpha=0.5, label='Perfect Efficiency')
-    ax.set_xlabel('Thread Count', fontweight='bold')
-    ax.set_ylabel('Parallel Efficiency (%)', fontweight='bold')
-    ax.set_title(f'Thread Scaling Efficiency ({algorithm})', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_ylim(0, 150)
+        ax.set_xlabel('Thread Count', fontweight='bold')
+        ax.set_ylabel('Parallel Efficiency (%)', fontweight='bold')
+        ax.set_title(f'{source_name.title()} - Parallel Efficiency ({matrix_size}×{matrix_size})', fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_ylim(0, 150)
 
     plt.tight_layout()
     plt.show()
 
+# 4. Implementation Efficiency Heatmaps
+def plot_implementation_heatmaps():
+    fig, axes = plt.subplots(2, 4, figsize=(24, 12))
+    fig.suptitle('Implementation Performance Heatmaps', fontsize=16, fontweight='bold')
 
-# Generate all plots
-if __name__ == "__main__":
-    print("Generating Matrix Multiplication Performance Analysis Plots...")
-    print("=" * 70)
+    matrix_sizes = [512, 1024, 2048, 4096, 8192]
+    thread_counts = [2, 4, 8, 12]
+    
+    data_sources = [('Matrix', matrix_data), ('Array', matrix_as_array_data)]
+    algorithms = ['NaiveMul', 'OptimizedMul']
+    
+    for row, algorithm in enumerate(algorithms):
+        for col, (source_name, source_data) in enumerate(data_sources):
+            for data_type_idx, data_type in enumerate(['Int', 'Double']):
+                ax_col = col * 2 + data_type_idx
+                if ax_col >= 4:
+                    continue
+                    
+                ax = axes[row][ax_col]
+                
+                # Create performance matrix
+                performance_matrix = np.zeros((len(thread_counts), len(matrix_sizes)))
+                
+                for t_idx, threads in enumerate(thread_counts):
+                    data = get_data_from_source(source_name.lower(), data_type, threads, algorithm)
+                    for size, time in data:
+                        if size in matrix_sizes:
+                            s_idx = matrix_sizes.index(size)
+                            performance_matrix[t_idx][s_idx] = time
 
-    print("\n1. Generating Algorithm Comparison...")
-    plot_algorithm_comparison()
+                # Create heatmap with log scale
+                log_matrix = np.log10(performance_matrix + 1)
+                im = ax.imshow(log_matrix, cmap='YlOrRd', aspect='auto')
 
-    print("2. Generating Scalability Analysis...")
-    plot_scalability_analysis()
+                # Set ticks and labels
+                ax.set_xticks(range(len(matrix_sizes)))
+                ax.set_xticklabels([f'{size}' for size in matrix_sizes])
+                ax.set_yticks(range(len(thread_counts)))
+                ax.set_yticklabels(thread_counts)
 
-    print("3. Generating Parallel Speedup Analysis...")
-    plot_speedup_analysis()
+                ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+                ax.set_ylabel('Thread Count', fontweight='bold')
+                ax.set_title(f'{source_name} {data_type} - {algorithm}', fontweight='bold')
 
-    print("4. Generating GFLOPS Performance Analysis...")
-    plot_gflops_analysis()
+                # Add colorbar
+                cbar = plt.colorbar(im, ax=ax)
+                cbar.set_label('log₁₀(Time)', fontsize=10)
 
-    print("5. Generating Memory Efficiency Analysis...")
-    plot_memory_efficiency()
+    plt.tight_layout()
+    plt.show()
 
-    print("6. Generating Performance Heatmaps...")
-    plot_performance_heatmaps()
+# 5. Peak Performance Comparison
+def plot_peak_performance():
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle('Peak Performance Comparison Analysis', fontsize=16, fontweight='bold')
 
-    print("7. Generating Cache Performance Analysis...")
-    plot_cache_analysis()
+    # Plot 1: Peak GFLOPS by implementation and data type
+    ax = axes[0][0]
+    data_types = ['Int', 'Long', 'Double']
+    implementations = ['Matrix Naive', 'Matrix Opt', 'Array Naive', 'Array Opt']
+    
+    x_pos = np.arange(len(data_types))
+    width = 0.2
+    colors = ['red', 'blue', 'orange', 'green']
+    
+    for i, (impl_name, color) in enumerate(zip(implementations, colors)):
+        peak_gflops = []
+        source_name = 'matrix' if 'Matrix' in impl_name else 'array'
+        algorithm = 'OptimizedMul' if 'Opt' in impl_name else 'NaiveMul'
+        
+        for data_type in data_types:
+            max_gflops = 0
+            for threads in [2, 4, 8, 12]:
+                data = get_data_from_source(source_name, data_type, threads, algorithm)
+                for size, time in data:
+                    gflops = calculate_gflops(size, time)
+                    max_gflops = max(max_gflops, gflops)
+            peak_gflops.append(max_gflops)
+        
+        ax.bar(x_pos + i * width, peak_gflops, width, label=impl_name, 
+               color=color, alpha=0.8)
 
-    print("\nAll matrix multiplication analysis plots generated successfully!")
-    print("=" * 70)
+    ax.set_xlabel('Data Type', fontweight='bold')
+    ax.set_ylabel('Peak GFLOPS', fontweight='bold')
+    ax.set_title('Peak GFLOPS by Implementation', fontweight='bold')
+    ax.set_xticks(x_pos + width * 1.5)
+    ax.set_xticklabels(data_types)
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis='y')
 
-    # Print some key insights
-    print("\nKey Research Insights:")
-    print("-" * 30)
-
-    # Calculate and display optimization factors
+    # Plot 2: Implementation advantage analysis
+    ax = axes[0][1]
     data_type = 'Int'
     threads = 8
-    if data_type in matrix_data and threads in matrix_data[data_type]:
-        naive_data = matrix_data[data_type][threads]['NaiveMul']
-        opt_data = matrix_data[data_type][threads]['OptimizedMul']
+    
+    matrix_naive = get_data_from_source('matrix', data_type, threads, 'NaiveMul')
+    array_opt = get_data_from_source('array', data_type, threads, 'OptimizedMul')
+    
+    if matrix_naive and array_opt:
+        advantage_factors = calculate_optimization_factor(matrix_naive, array_opt)
+        sizes, factors = zip(*advantage_factors)
+        ax.semilogx(sizes, factors, 'o-', linewidth=3, markersize=8,
+                    color='purple', label='Array Opt vs Matrix Naive')
 
-        print(f"\nOptimization Factors ({data_type}, {threads} threads):")
-        for (size_n, time_n), (size_o, time_o) in zip(naive_data, opt_data):
-            if size_n == size_o and time_o > 0:
-                factor = time_n / time_o
-                print(f"  {size_n}×{size_n}: {factor:.1f}x faster")
+    matrix_opt = get_data_from_source('matrix', data_type, threads, 'OptimizedMul')
+    if matrix_opt and array_opt:
+        impl_comparison = calculate_optimization_factor(matrix_opt, array_opt)
+        sizes, factors = zip(*impl_comparison)
+        ax.semilogx(sizes, factors, 's-', linewidth=3, markersize=8,
+                    color='green', label='Array Opt vs Matrix Opt')
 
-    # Calculate peak GFLOPS
-    print(f"\nPeak GFLOPS Performance:")
-    for data_type in ['Int', 'Long', 'Double']:
+    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+    ax.set_ylabel('Performance Advantage Factor', fontweight='bold')
+    ax.set_title('Implementation Advantage Analysis', fontweight='bold')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_xticks([512, 1024, 2048, 4096, 8192])
+    ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
+
+    # Plot 3: Memory throughput comparison
+    ax = axes[1][0]
+    type_sizes = {'Int': 4, 'Long': 8, 'Double': 8}
+    data_type = 'Int'
+    threads = 8
+    
+    implementations = {
+        'Matrix Opt': get_data_from_source('matrix', data_type, threads, 'OptimizedMul'),
+        'Array Opt': get_data_from_source('array', data_type, threads, 'OptimizedMul')
+    }
+    
+    for impl_name, data in implementations.items():
+        if data:
+            memory_throughput = []
+            sizes_list = []
+            for size, time in data:
+                total_bytes = 3 * (size ** 2) * type_sizes[data_type]
+                if time > 0:
+                    throughput = total_bytes / time / 1e6
+                    memory_throughput.append(throughput)
+                    sizes_list.append(size)
+            
+            if memory_throughput:
+                marker = 's' if 'Matrix' in impl_name else 'o'
+                color = 'blue' if 'Matrix' in impl_name else 'green'
+                ax.semilogx(sizes_list, memory_throughput, f'{marker}-',
+                            linewidth=3, markersize=8, label=impl_name,
+                            color=color, alpha=0.8)
+
+    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+    ax.set_ylabel('Memory Throughput (MB/s)', fontweight='bold')
+    ax.set_title('Memory Throughput: Optimized Implementations', fontweight='bold')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_xticks([512, 1024, 2048, 4096, 8192])
+    ax.set_xticklabels([512, 1024, 2048, 4096, 8192])
+
+    # Plot 4: Best configuration summary
+    ax = axes[1][1]
+    matrix_sizes = [1024, 2048, 4096, 8192]
+    
+    best_times_matrix = []
+    best_times_array = []
+    
+    for size in matrix_sizes:
+        # Find best time for matrix implementation
+        best_matrix = float('inf')
+        best_array = float('inf')
+        
+        for threads in [2, 4, 8, 12]:
+            for algorithm in ['NaiveMul', 'OptimizedMul']:
+                # Matrix
+                matrix_data_point = get_data_from_source('matrix', 'Int', threads, algorithm)
+                for s, t in matrix_data_point:
+                    if s == size and t < best_matrix:
+                        best_matrix = t
+                
+                # Array
+                array_data_point = get_data_from_source('array', 'Int', threads, algorithm)
+                for s, t in array_data_point:
+                    if s == size and t < best_array:
+                        best_array = t
+        
+        best_times_matrix.append(best_matrix if best_matrix != float('inf') else 0)
+        best_times_array.append(best_array if best_array != float('inf') else 0)
+
+    x_pos = np.arange(len(matrix_sizes))
+    width = 0.35
+    
+    ax.bar(x_pos - width/2, best_times_matrix, width, label='Matrix (Best)',
+           color='blue', alpha=0.8)
+    ax.bar(x_pos + width/2, best_times_array, width, label='Array (Best)',
+           color='green', alpha=0.8)
+
+    ax.set_xlabel('Matrix Size (N×N)', fontweight='bold')
+    ax.set_ylabel('Best Execution Time', fontweight='bold')
+    ax.set_title('Best Performance by Implementation', fontweight='bold')
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels([f'{size}×{size}' for size in matrix_sizes])
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis='y')
+    ax.set_yscale('log')
+
+    plt.tight_layout()
+    plt.show()
+
+# Updated main execution with new analysis
+if __name__ == "__main__":
+    print("Generating Extended Matrix Multiplication Performance Analysis...")
+    print("=" * 80)
+
+    print("\n1. Generating Implementation Comparison (Matrix vs Array)...")
+    plot_implementation_comparison()
+
+    print("2. Generating Cross-Implementation Analysis...")
+    plot_cross_implementation_analysis()
+
+    print("3. Generating Comprehensive Scalability Analysis...")
+    plot_comprehensive_scalability()
+
+    print("4. Generating Implementation Performance Heatmaps...")
+    plot_implementation_heatmaps()
+
+    print("5. Generating Peak Performance Comparison...")
+    plot_peak_performance()
+
+    print("\nAll extended analysis plots generated successfully!")
+    print("=" * 80)
+
+    # Print comprehensive insights
+    print("\nComprehensive Performance Insights:")
+    print("-" * 40)
+
+    # Compare implementations
+    data_type = 'Int'
+    threads = 8
+    matrix_opt = get_data_from_source('matrix', data_type, threads, 'OptimizedMul')
+    array_opt = get_data_from_source('array', data_type, threads, 'OptimizedMul')
+
+    if matrix_opt and array_opt:
+        print(f"\nImplementation Comparison ({data_type}, {threads} threads):")
+        for (size_m, time_m), (size_a, time_a) in zip(matrix_opt, array_opt):
+            if size_m == size_a and time_a > 0:
+                advantage = time_m / time_a
+                winner = "Array" if advantage > 1 else "Matrix"
+                factor = max(advantage, 1/advantage)
+                print(f"  {size_m}×{size_m}: {winner} is {factor:.1f}x faster")
+
+    # Peak GFLOPS comparison
+    print(f"\nPeak GFLOPS by Implementation:")
+    implementations = [
+        ('Matrix Naive', 'matrix', 'NaiveMul'),
+        ('Matrix Optimized', 'matrix', 'OptimizedMul'),
+        ('Array Naive', 'array', 'NaiveMul'),
+        ('Array Optimized', 'array', 'OptimizedMul')
+    ]
+    
+    for impl_name, source, algorithm in implementations:
         max_gflops = 0
         best_config = ""
-        for threads in [2, 4, 8, 12]:
-            if data_type in matrix_data and threads in matrix_data[data_type]:
-                for algorithm in ['NaiveMul', 'OptimizedMul']:
-                    data = matrix_data[data_type][threads][algorithm]
-                    for size, time in data:
-                        gflops = calculate_gflops(size, time)
-                        if gflops > max_gflops:
-                            max_gflops = gflops
-                            best_config = f"{threads}t, {algorithm}, {size}×{size}"
-
-        print(f"  {data_type}: {max_gflops:.2f} GFLOPS ({best_config})")
+        
+        for data_type in ['Int', 'Long', 'Double']:
+            for threads in [2, 4, 8, 12]:
+                data = get_data_from_source(source, data_type, threads, algorithm)
+                for size, time in data:
+                    gflops = calculate_gflops(size, time)
+                    if gflops > max_gflops:
+                        max_gflops = gflops
+                        best_config = f"{data_type}, {threads}t, {size}×{size}"
+        
+        print(f"  {impl_name}: {max_gflops:.2f} GFLOPS ({best_config})")
