@@ -4,11 +4,12 @@
 
 constexpr size_t CACHE_LINE = 64;
 
-constexpr size_t ALIGNMENT_32 = 32;
-constexpr size_t SIMD_INT_WIDTH = 8;
-constexpr size_t SIMD_LONG_WIDTH = 4;
+constexpr size_t ALIGNMENT_32      = 32;
+constexpr size_t SIMD_INT_WIDTH    = 8;
+constexpr size_t SIMD_LONG_WIDTH   = 4;
 constexpr size_t SIMD_DOUBLE_WIDTH = 4;
 
+constexpr size_t LOOP_COUNT_18   = 18;
 constexpr size_t LOOP_COUNT_200K = 200000;
 constexpr size_t LOOP_COUNT_400K = 400000;
 
