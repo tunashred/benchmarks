@@ -55,11 +55,9 @@ template <typename T>
 void CMatrixShared<T>::runTest(mul_function<T> mul) {
     size_t matrixSize, numThreads;
     std::tie(matrixSize, numThreads) = this->GetParam();
-    
-    // Calculate grid dimensions (e.g., for 4 threads: 2x2 grid, for 9 threads: 3x3 grid)
+
     size_t gridSize = static_cast<size_t>(std::sqrt(numThreads));
     if (gridSize * gridSize != numThreads) {
-        // Handle non-perfect square thread counts - fall back to row-wise splitting
         size_t rowsPerThread = matrixSize / numThreads;
         size_t remainder = matrixSize % numThreads;
         size_t startRow = 0;
@@ -72,7 +70,6 @@ void CMatrixShared<T>::runTest(mul_function<T> mul) {
             startRow = endRow;
         }
     } else {
-        // Perfect square thread count - use 2D grid splitting
         size_t blockRows = matrixSize / gridSize;
         size_t blockCols = matrixSize / gridSize;
         size_t rowRemainder = matrixSize % gridSize;
