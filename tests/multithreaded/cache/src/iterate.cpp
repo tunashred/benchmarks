@@ -1,6 +1,6 @@
 #include "multithreaded/iterate.hpp"
-#include "singlecore/iterate.hpp"
 #include "utils/utils.hpp"
+#include "utils/constants.hpp"
 
 template <typename T>
 void CArrayShared<T>::SetUp() {

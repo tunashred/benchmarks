@@ -1,5 +1,5 @@
 #include "simd/multithreaded_matrix.hpp"
-#include "utils/utils.hpp"
+#include "utils/constants.hpp"
 
 #include <immintrin.h>
 

@@ -1,5 +1,6 @@
 #include "singlecore/iterate.hpp"
 #include "utils/utils.hpp"
+#include "utils/constants.hpp"
 
 template <typename T>
 void CArray<T>::SetUp() {

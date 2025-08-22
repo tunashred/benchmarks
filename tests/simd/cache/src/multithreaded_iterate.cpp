@@ -1,5 +1,5 @@
 #include "simd/multithreaded_iterate.hpp"
-#include "utils/utils.hpp"
+#include "utils/constants.hpp"
 
 #include <immintrin.h>
 
