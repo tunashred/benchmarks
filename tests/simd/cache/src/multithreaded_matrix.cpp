@@ -36,10 +36,11 @@ void optimized_mul<int>(size_t startRow, size_t endRow, size_t startCol, size_t 
     
     for (size_t i = startRow; i < endRow; i++) {
         for (size_t k = 0; k < matrixSize; k++) {
+            // _mm_prefetch(&test->matrix_C, _MM_HINT_T0);
             __m256i a = _mm256_set1_epi32(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_INT_WIDTH <= endCol; j += SIMD_INT_WIDTH) { 
-                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&test->matrix_C[i * matrixSize + j]));
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&test->matrix_B[k * matrixSize + j]));
+                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&test->matrix_C[i * matrixSize + j]));
                 c = _mm256_add_epi32(c, _mm256_mullo_epi32(a, b));
                 _mm256_store_si256(reinterpret_cast<__m256i*>(&test->matrix_C[i * matrixSize + j]), c);
             }
@@ -54,10 +55,11 @@ void optimized_mul<long>(size_t startRow, size_t endRow, size_t startCol, size_t
     
     for (size_t i = startRow; i < endRow; i++) {
         for (size_t k = 0; k < matrixSize; k++) {
+            // _mm_prefetch(&test->matrix_C, _MM_HINT_T0);
             __m256i a = _mm256_set1_epi64x(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_LONG_WIDTH <= endCol; j += SIMD_LONG_WIDTH) { 
-                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&test->matrix_C[i * matrixSize + j]));
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&test->matrix_B[k * matrixSize + j]));
+                __m256i c = _mm256_load_si256(reinterpret_cast<__m256i*>(&test->matrix_C[i * matrixSize + j]));
         
                 // the multiply is on int because my CPU does not support AVX512
                 c = _mm256_add_epi64(c, _mm256_mullo_epi32(a, b));
@@ -73,14 +75,18 @@ void optimized_mul<double>(size_t startRow, size_t endRow, size_t startCol, size
     std::tie(matrixSize, numThreads) = test->GetParam();
     
     for (size_t i = startRow; i < endRow; i++) {
+        _mm_prefetch(&test->matrix_A[i * matrixSize], _MM_HINT_T1);
         for (size_t k = 0; k < matrixSize; k++) {
+            _mm_prefetch(&test->matrix_B[k * matrixSize], _MM_HINT_T0);
+            _mm_prefetch(&test->matrix_C[i * matrixSize], _MM_HINT_T0);
             __m256d a = _mm256_set1_pd(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_DOUBLE_WIDTH <= endCol; j += SIMD_DOUBLE_WIDTH) { 
-                __m256d c = _mm256_load_pd(&test->matrix_C[i * matrixSize + j]);
                 __m256d b = _mm256_load_pd(&test->matrix_B[k * matrixSize + j]);
+                __m256d c = _mm256_load_pd(&test->matrix_C[i * matrixSize + j]);
                 c = _mm256_add_pd(c, _mm256_mul_pd(a, b));
                 _mm256_store_pd(&test->matrix_C[i * matrixSize + j], c);
             }
+            _mm_prefetch(&test->matrix_A[i * matrixSize + k + 1], _MM_HINT_T0);
         }
     }
 }
