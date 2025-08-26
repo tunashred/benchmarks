@@ -1,9 +1,9 @@
-#include "singlecore/compute.hpp"
+#include "singlecore/compute_batch.hpp"
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
 template <typename T>
-void CArrayCompute<T>::SetUp() {
+void CArrayComputeBatch<T>::SetUp() {
     size_t size = this->GetParam();
     size_t totalSize = size * sizeof *array;
 
@@ -15,12 +15,12 @@ void CArrayCompute<T>::SetUp() {
 }
 
 template <typename T>
-void CArrayCompute<T>::TearDown() {
+void CArrayComputeBatch<T>::TearDown() {
     free(array);
 }
 
 template <typename T>
-void CArrayCompute<T>::batch_add() {
+void CArrayComputeBatch<T>::batch_add() {
     size_t size = GetParam();
     for (size_t i = 0; i < LOOP_COUNT_400K; i++) {
         for (size_t j = 0; j < size; j++) {
@@ -30,7 +30,7 @@ void CArrayCompute<T>::batch_add() {
 }
 
 template <typename T>
-void CArrayCompute<T>::batch_mul() {
+void CArrayComputeBatch<T>::batch_mul() {
     size_t size = GetParam();
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
         for (size_t j = 0; j < LOOP_COUNT_18; j++) {
@@ -41,51 +41,51 @@ void CArrayCompute<T>::batch_mul() {
     }
 }
 
-using CArrayComputeInt = CArrayCompute<int>;
-using CArrayComputeLong = CArrayCompute<long>;
-using CArrayComputeDouble = CArrayCompute<double>;
+using CArrayComputeBatchInt = CArrayComputeBatch<int>;
+using CArrayComputeBatchLong = CArrayComputeBatch<long>;
+using CArrayComputeBatchDouble = CArrayComputeBatch<double>;
 
-TEST_P(CArrayComputeInt, BatchAdd) {
+TEST_P(CArrayComputeBatchInt, BatchAdd) {
     batch_add();
 }
 
-TEST_P(CArrayComputeLong, BatchAdd) {
+TEST_P(CArrayComputeBatchLong, BatchAdd) {
     batch_add();
 }
 
-TEST_P(CArrayComputeDouble, BatchAdd) {
+TEST_P(CArrayComputeBatchDouble, BatchAdd) {
     batch_add();
 }
 
-TEST_P(CArrayComputeInt, BatchMul) {
+TEST_P(CArrayComputeBatchInt, BatchMul) {
     batch_mul();
 }
 
-TEST_P(CArrayComputeLong, BatchMul) {
+TEST_P(CArrayComputeBatchLong, BatchMul) {
     batch_mul();
 }
 
-TEST_P(CArrayComputeDouble, BatchMul) {
+TEST_P(CArrayComputeBatchDouble, BatchMul) {
     batch_mul();
 }
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_compute,
-    CArrayComputeInt,
+    CArrayComputeBatchInt,
     ::testing::ValuesIn(small_pow2),
-    CArrayComputeInt::getTestCaseName
+    CArrayComputeBatchInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_compute,
-    CArrayComputeLong,
+    CArrayComputeBatchLong,
     ::testing::ValuesIn(small_pow2),
-    CArrayComputeLong::getTestCaseName
+    CArrayComputeBatchLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_compute,
-    CArrayComputeDouble,
+    CArrayComputeBatchDouble,
     ::testing::ValuesIn(small_pow2),
-    CArrayComputeDouble::getTestCaseName
+    CArrayComputeBatchDouble::getTestCaseName
 );

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 template <typename T>
-class CArrayCompute : public testing::TestWithParam<size_t> {
+class CArrayComputeBatch : public ::testing::TestWithParam<size_t> {
 protected:
     void SetUp() override;
 
@@ -19,4 +19,3 @@ public:
 
     void batch_mul();
 };
-
