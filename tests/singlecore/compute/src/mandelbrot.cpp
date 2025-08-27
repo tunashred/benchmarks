@@ -1,4 +1,4 @@
-#include "singlecore/compute_mandelbrot.hpp"
+#include "singlecore/mandelbrot.hpp"
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 

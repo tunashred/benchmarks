@@ -1,4 +1,4 @@
-#include "singlecore/compute_batch.hpp"
+#include "singlecore/batch.hpp"
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
