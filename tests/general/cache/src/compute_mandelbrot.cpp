@@ -3,17 +3,26 @@
 #include "utils/constants.hpp"
 
 void CArrayComputeMandelbrot::SetUp() {
-    size_t width, height;
-    std::tie(width, height) = GetParam();
+    std::tuple<size_t, size_t> dimensions;
+    std::tuple<double, double, double> _mandelbrot_args;
+    double center_coord_real, center_coord_im, radius;
+    std::tie(dimensions, _mandelbrot_args) = GetParam();
+
+    std::tie(width, height) = dimensions;
+    std::tie(center_coord_real, center_coord_im, radius) = _mandelbrot_args;
 
     size_t totalSize = width * height * sizeof *array;
 
     // TODO: safe_malloc should be wrapped around NO_THROW macro
-    array = (int*) safe_malloc(totalSize);
+    array = (size_t*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << totalSize;
 
     // warming up the memory
     memset(array, 1, totalSize);
+
+    this->pixel_width         = radius * 2 / ((width < height) ? static_cast<double>(width) : static_cast<double>(height));
+    this->top_left_coord_real = center_coord_real + static_cast<double>(width) / 2 * this->pixel_width;
+    this->top_left_coord_im   = center_coord_im + static_cast<double>(height) / 2 * this->pixel_width;
 }
 
 void CArrayComputeMandelbrot::TearDown() {
@@ -21,30 +30,29 @@ void CArrayComputeMandelbrot::TearDown() {
 }
 
 void CArrayComputeMandelbrot::mandelbrot() {
-    size_t width, height;
-    std::tie(width, height) = GetParam();
-    
-    double real, im;
-    int count = 0;
-    
-    for (size_t i = 0; i < width; i++) {
-        for (size_t j = 0; j < height; j++) {
-            for (size_t k = 0; k < LOOP_COUNT_1500; k++) {
-                scalar_mandelbrot_quadratic(-0.454839, -0.153992, -0.700025, -0.268500, &real, &im);
-                count++;
-            }
-            array[height * i + j] = count;
+    double im_part = this->top_left_coord_im;
+    for (size_t i = 0; i < height; i++) {
+        double real_part = this->top_left_coord_real;
+        for (size_t j = 0; j < width; j++) {
+            size_t iter_count = diverge(real_part, im_part, LOOP_COUNT_1500);
+            
+            array[height * i + j] = iter_count;
+
+            real_part += pixel_width;
         }
+        im_part -= pixel_width;
     }
 }
 
-TEST_P(CArrayComputeMandelbrot, MandelbrotDiverge) {
+TEST_P(CArrayComputeMandelbrot, MandelbrotQuadratic) {
     mandelbrot();
 }
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_compute,
     CArrayComputeMandelbrot,
-    ::testing::ValuesIn(picture_dimensions),
+    ::testing::Combine(
+        ::testing::ValuesIn(picture_dimensions),
+        ::testing::ValuesIn(mandelbrot_args)),
     CArrayComputeMandelbrot::getTestCaseName
 );

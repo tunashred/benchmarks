@@ -19,7 +19,18 @@ constexpr size_t LOOP_COUNT_1M   = 1'000'000;
 
 constexpr std::array<size_t, 3> small_pow2 = {8, 16, 32};
 
-constexpr std::array<std::tuple<size_t, size_t>, 4> picture_dimensions = {{ {1920, 1080},
-                                                                            {3840, 2160},
-                                                                            {5760, 3240},
-                                                                            {7680, 4320} }};
+constexpr std::array<std::tuple<size_t, size_t>, 4> picture_dimensions = {{
+    {1920, 1080},
+    {3840, 2160},
+    {5760, 3240},
+    {7680, 4320}
+}};
+
+constexpr std::array<std::tuple<double, double, double>, 5> mandelbrot_args = {{
+    //   center_x             center_y             scale
+    { -0.43,                  -0.1,                1.0           }, // mandelbrot
+    { -0.75 + 0.00005,        -0.02,               0.00025       }, // shells
+    { -0.72413,                0.28644,            0.0004        }, // seastar
+    { -0.7,                   -0.26,               0.01          }, // stuff
+    { -0.700025 + 0.000000007, -0.26849991525,     0.0000000035  }  // galaxy
+}};
