@@ -76,6 +76,7 @@ TEST_P(CArraySharedComputeMandelbrot, MandelbrotQuadratic) {
     ::runTest(this);
 }
 
+// TODO: revise suite names globally
 INSTANTIATE_TEST_SUITE_P(
     multithread_compute,
     CArraySharedComputeMandelbrot,
