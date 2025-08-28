@@ -3,7 +3,7 @@
 #include "utils/utils.hpp"
 #include <gtest/gtest.h>
 
-class CArrayComputeMandelbrot : public testing::TestWithParam<std::tuple<std::tuple<size_t, size_t>, std::tuple<double, double, double>>> {
+class AlignedArrayComputeMandelbrot : public testing::TestWithParam<std::tuple<std::tuple<size_t, size_t>, std::tuple<double, double, double>>> {
 protected:
     void SetUp() override;
 

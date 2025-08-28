@@ -14,7 +14,7 @@ void CArrayComputeMandelbrot::SetUp() {
     size_t totalSize = width * height * sizeof *array;
 
     // TODO: safe_malloc should be wrapped around NO_THROW macro
-    array = (size_t*) safe_malloc(totalSize);
+    array = (int*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << totalSize;
 
     // warming up the memory
@@ -34,9 +34,9 @@ void CArrayComputeMandelbrot::mandelbrot() {
     for (size_t i = 0; i < height; i++) {
         double real_part = this->top_left_coord_real;
         for (size_t j = 0; j < width; j++) {
-            size_t iter_count = diverge(real_part, im_part, LOOP_COUNT_1500);
+            int iter_count = scalar_diverge(real_part, im_part, ITER_1500);
             
-            array[height * i + j] = iter_count;
+            array[width * i + j] = iter_count;
 
             real_part += pixel_width;
         }

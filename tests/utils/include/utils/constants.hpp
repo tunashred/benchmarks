@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <tuple>
+#include <immintrin.h>
 
 constexpr size_t CACHE_LINE = 64;
 
@@ -34,3 +35,15 @@ constexpr std::array<std::tuple<double, double, double>, 5> mandelbrot_args = {{
     { -0.7,                   -0.26,               0.01          }, // stuff
     { -0.700025 + 0.000000007, -0.26849991525,     0.0000000035  }  // galaxy
 }};
+
+constexpr int ITER_1500 = 1500;
+
+const __m256d simd_doubles_2 = _mm256_set1_pd(2);
+
+const __m256d simd_doubles_minus_2 = _mm256_set1_pd(-2);
+
+const __m128i simd_ints_1500 = _mm_set1_epi32(1500);
+
+const __m256d simd_doubles_true = _mm256_castsi256_pd(_mm256_set1_epi64x(-1));
+
+const __m128i simd_ints_1 = _mm_set1_epi32(1);

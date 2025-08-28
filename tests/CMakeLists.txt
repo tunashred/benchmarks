@@ -17,6 +17,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/compute/include
     ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/simd/cache/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/simd/compute/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
 
