@@ -18,6 +18,8 @@ constexpr size_t LOOP_COUNT_200K = 200'000;
 constexpr size_t LOOP_COUNT_400K = 400'000;
 constexpr size_t LOOP_COUNT_1M   = 1'000'000;
 
+constexpr std::array<size_t, 4> NUM_THREADS = {2, 4, 8, 12};
+
 constexpr std::array<size_t, 3> small_pow2 = {8, 16, 32};
 
 constexpr std::array<std::tuple<size_t, size_t>, 4> picture_dimensions = {{
