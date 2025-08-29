@@ -2,7 +2,7 @@
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
-void AlignedArraySharedComputeMandelbrot::SetUp() {
+void AlignedArraySharedMandelbrot::SetUp() {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> mandelbrot_args;
     size_t numThreads;
@@ -28,11 +28,11 @@ void AlignedArraySharedComputeMandelbrot::SetUp() {
     this->top_left_coord_im   = center_coord_im + static_cast<double>(height) / 2 * this->pixel_width;
 }
 
-void AlignedArraySharedComputeMandelbrot::TearDown() {
+void AlignedArraySharedMandelbrot::TearDown() {
     free(array);
 }
 
-void mandelbrot_simd(size_t start_row, size_t end_row, const AlignedArraySharedComputeMandelbrot* test) {
+void mandelbrot_simd(size_t start_row, size_t end_row, const AlignedArraySharedMandelbrot* test) {
     double start_im = test->top_left_coord_im - (static_cast<double>(start_row) * test->pixel_width);
     __m256d im_part = _mm256_set1_pd(start_im);
     __m256d pixel_width_vec = _mm256_set1_pd(test->pixel_width);
@@ -68,7 +68,7 @@ void mandelbrot_simd(size_t start_row, size_t end_row, const AlignedArraySharedC
     }
 }
 
-void runTest(AlignedArraySharedComputeMandelbrot* test) {
+void runTest(AlignedArraySharedMandelbrot* test) {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> mandelbrot_args;
     size_t numThreads;
@@ -94,16 +94,16 @@ void runTest(AlignedArraySharedComputeMandelbrot* test) {
     }
 }
 
-TEST_P(AlignedArraySharedComputeMandelbrot, MandelbrotQuadratic) {
+TEST_P(AlignedArraySharedMandelbrot, MandelbrotQuadratic) {
     ::runTest(this);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_compute,
-    AlignedArraySharedComputeMandelbrot,
+    AlignedArraySharedMandelbrot,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),
         ::testing::ValuesIn(mandelbrot_args),
         ::testing::ValuesIn(NUM_THREADS)),
-    AlignedArraySharedComputeMandelbrot::getTestCaseName
+    AlignedArraySharedMandelbrot::getTestCaseName
 );

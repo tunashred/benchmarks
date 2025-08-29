@@ -2,7 +2,7 @@
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
-void CArrayComputeMandelbrot::SetUp() {
+void CArrayMandelbrot::SetUp() {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> _mandelbrot_args;
     double center_coord_real, center_coord_im, radius;
@@ -25,11 +25,11 @@ void CArrayComputeMandelbrot::SetUp() {
     this->top_left_coord_im   = center_coord_im + static_cast<double>(height) / 2 * this->pixel_width;
 }
 
-void CArrayComputeMandelbrot::TearDown() {
+void CArrayMandelbrot::TearDown() {
     free(array);
 }
 
-void CArrayComputeMandelbrot::mandelbrot() {
+void CArrayMandelbrot::mandelbrot() {
     double im_part = this->top_left_coord_im;
     for (size_t i = 0; i < height; i++) {
         double real_part = this->top_left_coord_real;
@@ -44,15 +44,15 @@ void CArrayComputeMandelbrot::mandelbrot() {
     }
 }
 
-TEST_P(CArrayComputeMandelbrot, MandelbrotQuadratic) {
+TEST_P(CArrayMandelbrot, MandelbrotQuadratic) {
     mandelbrot();
 }
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_compute,
-    CArrayComputeMandelbrot,
+    CArrayMandelbrot,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),
         ::testing::ValuesIn(mandelbrot_args)),
-    CArrayComputeMandelbrot::getTestCaseName
+    CArrayMandelbrot::getTestCaseName
 );

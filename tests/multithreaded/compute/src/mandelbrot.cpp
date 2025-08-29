@@ -2,7 +2,7 @@
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
-void CArraySharedComputeMandelbrot::SetUp() {
+void CArrayShared::SetUp() {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> mandelbrot_args;
     size_t numThreads;
@@ -26,11 +26,11 @@ void CArraySharedComputeMandelbrot::SetUp() {
     this->top_left_coord_im   = center_coord_im + static_cast<double>(height) / 2 * this->pixel_width;
 }
 
-void CArraySharedComputeMandelbrot::TearDown() {
+void CArrayShared::TearDown() {
     free(array);
 }
 
-void mandelbrot(size_t start_row, size_t end_row, const CArraySharedComputeMandelbrot* test) {
+void mandelbrot(size_t start_row, size_t end_row, const CArrayShared* test) {
     double im_part = test->top_left_coord_im - (static_cast<double>(start_row) * test->pixel_width);
     
     for (size_t i = start_row; i < end_row; i++) {
@@ -46,7 +46,7 @@ void mandelbrot(size_t start_row, size_t end_row, const CArraySharedComputeMande
     }
 }
 
-void runTest(CArraySharedComputeMandelbrot* test) {
+void runTest(CArrayShared* test) {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> mandelbrot_args;
     size_t numThreads;
@@ -72,17 +72,17 @@ void runTest(CArraySharedComputeMandelbrot* test) {
     }
 }
 
-TEST_P(CArraySharedComputeMandelbrot, MandelbrotQuadratic) {
+TEST_P(CArrayShared, MandelbrotQuadratic) {
     ::runTest(this);
 }
 
 // TODO: revise suite names globally
 INSTANTIATE_TEST_SUITE_P(
     multithread_compute,
-    CArraySharedComputeMandelbrot,
+    CArrayShared,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),
         ::testing::ValuesIn(mandelbrot_args),
         ::testing::ValuesIn(NUM_THREADS)),
-    CArraySharedComputeMandelbrot::getTestCaseName
+    CArrayShared::getTestCaseName
 );

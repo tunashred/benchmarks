@@ -2,7 +2,7 @@
 #include "utils/utils.hpp"
 #include "utils/constants.hpp"
 
-void AlignedArrayComputeMandelbrot::SetUp() {
+void AlignedArrayMandelbrot::SetUp() {
     std::tuple<size_t, size_t> dimensions;
     std::tuple<double, double, double> _mandelbrot_args;
     double center_coord_real, center_coord_im, radius;
@@ -27,11 +27,11 @@ void AlignedArrayComputeMandelbrot::SetUp() {
     this->top_left_coord_im   = center_coord_im + static_cast<double>(height) / 2 * this->pixel_width;
 }
 
-void AlignedArrayComputeMandelbrot::TearDown() {
+void AlignedArrayMandelbrot::TearDown() {
     free(array);
 }
 
-void AlignedArrayComputeMandelbrot::mandelbrot() {
+void AlignedArrayMandelbrot::mandelbrot() {
     __m256d im_part = _mm256_set1_pd(this->top_left_coord_im);
     __m256d pixel_width_vec = _mm256_set1_pd(this->pixel_width);
 
@@ -53,15 +53,15 @@ void AlignedArrayComputeMandelbrot::mandelbrot() {
     }
 }
 
-TEST_P(AlignedArrayComputeMandelbrot, MandelbrotQuadratic) {
+TEST_P(AlignedArrayMandelbrot, MandelbrotQuadratic) {
     mandelbrot();
 }
 
 INSTANTIATE_TEST_SUITE_P(
     simd_compute,
-    AlignedArrayComputeMandelbrot,
+    AlignedArrayMandelbrot,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),
         ::testing::ValuesIn(mandelbrot_args)),
-    AlignedArrayComputeMandelbrot::getTestCaseName
+    AlignedArrayMandelbrot::getTestCaseName
 );

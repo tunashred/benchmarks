@@ -10,7 +10,7 @@ using testParams = std::tuple<
     std::tuple<double, double, double>,
     size_t>;
 
-class AlignedArraySharedComputeMandelbrot : public testing::TestWithParam<testParams> {
+class AlignedArraySharedMandelbrot : public testing::TestWithParam<testParams> {
 protected:
     void SetUp() override;
 
@@ -43,6 +43,6 @@ public:
 
 };
 
-static void mandelbrot(size_t start_row, size_t end_row, const AlignedArraySharedComputeMandelbrot* test);
+static void mandelbrot(size_t start_row, size_t end_row, const AlignedArraySharedMandelbrot* test);
 
-static void runTest(AlignedArraySharedComputeMandelbrot* test);
+static void runTest(AlignedArraySharedMandelbrot* test);

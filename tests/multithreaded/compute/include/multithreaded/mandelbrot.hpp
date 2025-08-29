@@ -10,7 +10,7 @@ using testParams = std::tuple<
     std::tuple<double, double, double>,
     size_t>;
 
-class CArraySharedComputeMandelbrot : public testing::TestWithParam<testParams> {
+class CArrayShared : public testing::TestWithParam<testParams> {
 protected:
     void SetUp() override;
 
@@ -43,6 +43,6 @@ public:
 
 };
 
-static void mandelbrot(size_t start_row, size_t end_row, const CArraySharedComputeMandelbrot* test);
+static void mandelbrot(size_t start_row, size_t end_row, const CArrayShared* test);
 
-static void runTest(CArraySharedComputeMandelbrot* test);
+static void runTest(CArrayShared* test);
