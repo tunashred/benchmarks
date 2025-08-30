@@ -12,8 +12,7 @@ void CArrayShared::SetUp() {
     std::tie(width, height) = dimensions;
     
     size_t totalSize = width * height * sizeof(int);
-    
-    // TODO: safe_malloc should be wrapped around NO_THROW macro
+
     array = (int*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << totalSize;
     
