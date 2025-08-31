@@ -135,16 +135,12 @@ TEST_P(AlignedMatrixSharedDouble, OptimizedMul) {
     runTest(::optimized_mul<double>);
 }
 
-std::vector<size_t> simd_matrix_sizes = {512, 1024, 2048, 4096, 8192};
-
-std::vector<size_t> simd_matrix_threads = {2, 4, 8, 12};
-
 INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_matrix,
     AlignedMatrixSharedInt,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_matrix_sizes),
-        ::testing::ValuesIn(simd_matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedMatrixSharedInt::getTestCaseName
 );
@@ -153,8 +149,8 @@ INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_matrix,
     AlignedMatrixSharedLong,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_matrix_sizes),
-        ::testing::ValuesIn(simd_matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedMatrixSharedLong::getTestCaseName
 );
@@ -163,8 +159,8 @@ INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_matrix,
     AlignedMatrixSharedDouble,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_matrix_sizes),
-        ::testing::ValuesIn(simd_matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedMatrixSharedDouble::getTestCaseName
 );

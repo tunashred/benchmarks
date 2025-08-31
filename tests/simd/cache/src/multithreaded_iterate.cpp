@@ -101,16 +101,12 @@ TEST_P(AlignedArraySharedDouble, SequentialIterate) {
     this->runTest(sequential_iterate<double>);
 }
 
-std::vector<size_t> simd_sizes = {192, 960, 9984, 99840, 1000128, 2000064};
-
-std::vector<size_t> simd_threads = {2, 4, 8, 12};
-
 INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     AlignedArraySharedInt,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_sizes),
-        ::testing::ValuesIn(simd_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedInt::getTestCaseName
 );
@@ -119,8 +115,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     AlignedArraySharedLong,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_sizes),
-        ::testing::ValuesIn(simd_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedLong::getTestCaseName
 );
@@ -129,8 +125,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     AlignedArraySharedDouble,
     ::testing::Combine(
-        ::testing::ValuesIn(simd_sizes),
-        ::testing::ValuesIn(simd_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedDouble::getTestCaseName
 );

@@ -20,6 +20,10 @@ constexpr size_t LOOP_COUNT_1M   = 1'000'000;
 
 constexpr std::array<size_t, 4> NUM_THREADS = {2, 4, 8, 12};
 
+constexpr std::array<size_t, 5> MATRIX_SIZES_POW2 = {512, 1024, 2048, 4096, 8192};
+
+constexpr std::array<size_t, 6> MATRIX_SIZES_ALIGNED = {192, 960, 9984, 99840, 1000128, 2000064};
+
 constexpr std::array<size_t, 3> small_pow2 = {8, 16, 32};
 
 constexpr std::array<std::tuple<size_t, size_t>, 4> picture_dimensions = {{

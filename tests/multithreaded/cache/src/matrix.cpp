@@ -1,5 +1,6 @@
 #include "multithreaded/matrix.hpp"
 #include "utils/utils.hpp"
+#include "utils/constants.hpp"
 
 #include <cmath>
 
@@ -121,16 +122,12 @@ TEST_P(CMatrixSharedDouble, OptimizedMul) {
     this->runTest(::optimized_mul<double>);
 }
 
-std::vector<size_t> matrix_sizes = {512, 1024, 2048, 4096, 8192};
-
-std::vector<size_t> matrix_threads = {2, 4, 8, 12};
-
 INSTANTIATE_TEST_SUITE_P(
     multithreaded_matrix,
     CMatrixSharedInt,
     ::testing::Combine(
-        ::testing::ValuesIn(matrix_sizes),
-        ::testing::ValuesIn(matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_POW2),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CMatrixSharedInt::getTestCaseName
 );
@@ -139,8 +136,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_matrix,
     CMatrixSharedLong,
     ::testing::Combine(
-        ::testing::ValuesIn(matrix_sizes),
-        ::testing::ValuesIn(matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_POW2),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CMatrixSharedLong::getTestCaseName
 );
@@ -149,8 +146,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_matrix,
     CMatrixSharedDouble,
     ::testing::Combine(
-        ::testing::ValuesIn(matrix_sizes),
-        ::testing::ValuesIn(matrix_threads)
+        ::testing::ValuesIn(MATRIX_SIZES_POW2),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CMatrixSharedDouble::getTestCaseName
 );
