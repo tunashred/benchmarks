@@ -125,20 +125,20 @@ TEST_P(AlignedMatrixDouble, OptimizedMul) {
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_caching,
     AlignedMatrixInt,
-    ::testing::Values(MATRIX_SIZES_ALIGNED),
+    ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
     AlignedMatrixInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_caching,
     AlignedMatrixLong,
-    ::testing::Values(MATRIX_SIZES_ALIGNED),
+    ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
     AlignedMatrixLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_caching,
     AlignedMatrixDouble,
-    ::testing::Values(MATRIX_SIZES_ALIGNED),
+    ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
     AlignedMatrixDouble::getTestCaseName
 );
