@@ -74,21 +74,21 @@ TEST_P(CMatrixDouble, OptimizedMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    GeneralCaching,
+    singlecore_caching,
     CMatrixInt,
     ::testing::Values(512, 1024, 2048, 4096, 8192),
     CMatrixInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    GeneralCaching,
+    singlecore_caching,
     CMatrixLong,
     ::testing::Values(512, 1024, 2048, 4096, 8192),
     CMatrixLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    GeneralCaching,
+    singlecore_caching,
     CMatrixDouble,
     ::testing::Values(512, 1024, 2048, 4096, 8192),
     CMatrixDouble::getTestCaseName

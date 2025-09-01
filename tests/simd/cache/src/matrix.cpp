@@ -110,14 +110,6 @@ TEST_P(AlignedMatrixInt, NaiveMul) {
     naive_mul();
 }
 
-// TEST_P(AlignedMatrixLong, NaiveMul) {
-//     naive_mul();
-// }
-
-// TEST_P(AlignedMatrixDouble, NaiveMul) {
-//     naive_mul();
-// }
-
 TEST_P(AlignedMatrixInt, OptimizedMul) {
     optimized_mul();
 }
@@ -131,21 +123,21 @@ TEST_P(AlignedMatrixDouble, OptimizedMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_matrix,
+    simd_singlecore_caching,
     AlignedMatrixInt,
     ::testing::Values(MATRIX_SIZES_ALIGNED),
     AlignedMatrixInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_matrix,
+    simd_singlecore_caching,
     AlignedMatrixLong,
     ::testing::Values(MATRIX_SIZES_ALIGNED),
     AlignedMatrixLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_matrix,
+    simd_singlecore_caching,
     AlignedMatrixDouble,
     ::testing::Values(MATRIX_SIZES_ALIGNED),
     AlignedMatrixDouble::getTestCaseName

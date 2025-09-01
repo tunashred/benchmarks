@@ -58,7 +58,7 @@ TEST_P(AlignedArrayMandelbrot, MandelbrotQuadratic) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_compute,
+    simd_singlecore_compute,
     AlignedArrayMandelbrot,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),

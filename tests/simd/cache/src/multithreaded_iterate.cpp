@@ -102,7 +102,7 @@ TEST_P(AlignedArraySharedDouble, SequentialIterate) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    simd_multithreaded_caching,
     AlignedArraySharedInt,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
@@ -112,7 +112,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    simd_multithreaded_caching,
     AlignedArraySharedLong,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
@@ -122,7 +122,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    simd_multithreaded_caching,
     AlignedArraySharedDouble,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),

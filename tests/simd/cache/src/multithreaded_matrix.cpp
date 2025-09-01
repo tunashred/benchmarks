@@ -136,7 +136,7 @@ TEST_P(AlignedMatrixSharedDouble, OptimizedMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_multithreaded_matrix,
+    simd_multithreaded_caching,
     AlignedMatrixSharedInt,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
@@ -146,7 +146,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_multithreaded_matrix,
+    simd_multithreaded_caching,
     AlignedMatrixSharedLong,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
@@ -156,7 +156,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_multithreaded_matrix,
+    simd_multithreaded_caching,
     AlignedMatrixSharedDouble,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),

@@ -123,7 +123,7 @@ TEST_P(CMatrixArraySharedDouble, OptimizedMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_matrix,
+    multithreaded_caching,
     CMatrixArraySharedInt,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_POW2),
@@ -133,7 +133,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_matrix,
+    multithreaded_caching,
     CMatrixArraySharedLong,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_POW2),
@@ -143,7 +143,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_matrix,
+    multithreaded_caching,
     CMatrixArraySharedDouble,
     ::testing::Combine(
         ::testing::ValuesIn(MATRIX_SIZES_POW2),

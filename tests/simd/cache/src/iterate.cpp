@@ -70,21 +70,21 @@ TEST_P(AlignedArrayDouble, SequentialIterate) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_iteration,
+    simd_singlecore_caching,
     AlignedArrayInt,
     ::testing::Values(12, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     AlignedArrayInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_iteration,
+    simd_singlecore_caching,
     AlignedArrayLong,
     ::testing::Values(12, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     AlignedArrayLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    simd_singlecore_iteration,
+    simd_singlecore_caching,
     AlignedArrayDouble,
     ::testing::Values(12, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     AlignedArrayDouble::getTestCaseName

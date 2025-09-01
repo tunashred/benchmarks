@@ -77,11 +77,9 @@ void write_pgm(const char* filename, const int* array, size_t width, size_t heig
         throw std::runtime_error("Cannot open file for writing");
     }
 
-    // PGM header (binary P5 format)
     ofs << "P5\n" << width << " " << height << "\n255\n";
 
     for (size_t i = 0; i < width * height; ++i) {
-        // Map iteration count to 0-255
         uint8_t pixel = static_cast<uint8_t>(255 * std::min(array[i], iter_count) / iter_count);
         ofs.write(reinterpret_cast<char*>(&pixel), 1);
     }
