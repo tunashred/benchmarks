@@ -38,7 +38,7 @@ public:
         std::tie(width, height) = dimensions;
         std::tie(center_coord_real, center_coord_im, radius) = mandelbrot_args;
 
-        return "size_" + std::to_string(width) + "x" + std::to_string(height) + "_" + get_mandelbrot_name(radius) + "_numThreads_" + std::to_string(numThreads);
+        return "size_" + std::to_string(width) + "x" + std::to_string(height) + "_" + get_mandelbrot_name(radius) + "_threads_" + std::to_string(numThreads);
     }
 
 };

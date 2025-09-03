@@ -25,7 +25,6 @@ public:
     
     void runTest(mul_function<T> mul);
     
-    // TODO: revise prints conventions
     static std::string getTestCaseName(const ::testing::TestParamInfo<std::tuple<size_t, size_t>>& info) {
         size_t totalSize, numThreads;
         std::tie(totalSize, numThreads) = info.param;
