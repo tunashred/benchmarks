@@ -31,7 +31,7 @@ public:
     static std::string getTestCaseName(const ::testing::TestParamInfo<std::tuple<size_t, size_t>>& info) {
         size_t totalSize, numThreads;
         std::tie(totalSize, numThreads) = info.param;
-        return "totalSize_" + std::to_string(totalSize) + "x" + std::to_string(totalSize) + "_threads_" + std::to_string(numThreads);
+        return "size_" + std::to_string(totalSize) + "x" + std::to_string(totalSize) + "_threads_" + std::to_string(numThreads);
     }
 };
 

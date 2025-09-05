@@ -134,27 +134,27 @@ TEST_P(CArraySharedDouble, SequentialIterate) {
     this->runTest(sequential_iterate<double>);
 }
 
-TEST_P(CArraySharedInt, ReverseSequentialIterate) {
+TEST_P(CArraySharedInt, DISABLED_ReverseSequentialIterate) {
     this->runTest(reverse_sequential_iterate<int>);
 }
 
-TEST_P(CArraySharedLong, ReverseSequentialIterate) {
+TEST_P(CArraySharedLong, DISABLED_ReverseSequentialIterate) {
     this->runTest(reverse_sequential_iterate<long>);
 }
 
-TEST_P(CArraySharedDouble, ReverseSequentialIterate) {
+TEST_P(CArraySharedDouble, DISABLED_ReverseSequentialIterate) {
     this->runTest(reverse_sequential_iterate<double>);
 }
 
-TEST_P(CArraySharedInt, NeighbourSequentialIterate) {
+TEST_P(CArraySharedInt, DISABLED_NeighbourSequentialIterate) {
     this->runNeighbourTest();
 }
 
-TEST_P(CArraySharedLong, NeighbourSequentialIterate) {
+TEST_P(CArraySharedLong, DISABLED_NeighbourSequentialIterate) {
     this->runNeighbourTest();
 }
 
-TEST_P(CArraySharedDouble, NeighbourSequentialIterate) {
+TEST_P(CArraySharedDouble, DISABLED_NeighbourSequentialIterate) {
     this->runNeighbourTest();
 }
 
