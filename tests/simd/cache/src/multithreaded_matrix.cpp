@@ -17,7 +17,7 @@ void AlignedMatrixShared<T>::SetUp() {
 
     memset(matrix_A, 3, totalSize);
     memset(matrix_B, 3, totalSize);
-    memset(matrix_C, 3, totalSize);
+    memset(matrix_C, 0, totalSize);
 }
 
 template <typename T>
@@ -36,7 +36,6 @@ void optimized_mul<int>(size_t startRow, size_t endRow, size_t startCol, size_t 
     
     for (size_t i = startRow; i < endRow; i++) {
         for (size_t k = 0; k < matrixSize; k++) {
-            // _mm_prefetch(&test->matrix_C, _MM_HINT_T0);
             __m256i a = _mm256_set1_epi32(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_INT_WIDTH <= endCol; j += SIMD_INT_WIDTH) { 
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&test->matrix_B[k * matrixSize + j]));
@@ -55,7 +54,6 @@ void optimized_mul<long>(size_t startRow, size_t endRow, size_t startCol, size_t
     
     for (size_t i = startRow; i < endRow; i++) {
         for (size_t k = 0; k < matrixSize; k++) {
-            // _mm_prefetch(&test->matrix_C, _MM_HINT_T0);
             __m256i a = _mm256_set1_epi64x(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_LONG_WIDTH <= endCol; j += SIMD_LONG_WIDTH) { 
                 __m256i b = _mm256_load_si256(reinterpret_cast<const __m256i*>(&test->matrix_B[k * matrixSize + j]));
@@ -75,18 +73,14 @@ void optimized_mul<double>(size_t startRow, size_t endRow, size_t startCol, size
     std::tie(matrixSize, numThreads) = test->GetParam();
     
     for (size_t i = startRow; i < endRow; i++) {
-        _mm_prefetch(&test->matrix_A[i * matrixSize], _MM_HINT_T1);
         for (size_t k = 0; k < matrixSize; k++) {
-            _mm_prefetch(&test->matrix_B[k * matrixSize], _MM_HINT_T0);
-            _mm_prefetch(&test->matrix_C[i * matrixSize], _MM_HINT_T0);
             __m256d a = _mm256_set1_pd(test->matrix_A[i * matrixSize + k]);
             for (size_t j = startCol; j + SIMD_DOUBLE_WIDTH <= endCol; j += SIMD_DOUBLE_WIDTH) { 
                 __m256d b = _mm256_load_pd(&test->matrix_B[k * matrixSize + j]);
                 __m256d c = _mm256_load_pd(&test->matrix_C[i * matrixSize + j]);
-                c = _mm256_add_pd(c, _mm256_mul_pd(a, b));
+                c = _mm256_fmadd_pd(a, b, c);
                 _mm256_store_pd(&test->matrix_C[i * matrixSize + j], c);
             }
-            _mm_prefetch(&test->matrix_A[i * matrixSize + k + 1], _MM_HINT_T0);
         }
     }
 }
