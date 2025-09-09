@@ -22,7 +22,7 @@ constexpr std::array<size_t, 4> NUM_THREADS = {2, 4, 8, 12};
 
 constexpr std::array<size_t, 5> MATRIX_SIZES_POW2 = {512, 1024, 2048, 4096, 8192};
 
-constexpr std::array<size_t, 6> ARRAY_SIZES = {192, 960, 9984, 99'840, 1'000'128, 2'000'000};
+constexpr std::array<size_t, 6> ARRAY_SIZES = {192, 960, 9984, 99'840, 1'000'128, 2'000'640};
 
 constexpr std::array<size_t, 3> small_pow2 = {8, 16, 32};
 
