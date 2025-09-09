@@ -52,13 +52,25 @@ void sequential_iterate<long>(size_t start, size_t end, const AlignedArrayShared
 
 template <>
 void sequential_iterate<double>(size_t start, size_t end, const AlignedArrayShared<double>* test) {
+    const __m256d one_vec = _mm256_set1_pd(1.0);
+    const size_t unroll_end = start + ((end - start) / (SIMD_DOUBLE_WIDTH * 4)) * (SIMD_DOUBLE_WIDTH * 4);
+    
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = start; j + SIMD_DOUBLE_WIDTH <= end; j += SIMD_DOUBLE_WIDTH) {
-            __m256d vec = _mm256_load_pd(test->array + j);
-
-            __m256d result = _mm256_add_pd(vec, _mm256_set1_pd(1));
-
-            _mm256_store_pd(test->array + j, result);
+        for (size_t j = start; j < unroll_end; j += SIMD_DOUBLE_WIDTH * 4) {
+            __m256d vec1 = _mm256_load_pd(test->array + j);
+            __m256d vec2 = _mm256_load_pd(test->array + j + SIMD_DOUBLE_WIDTH);
+            __m256d vec3 = _mm256_load_pd(test->array + j + SIMD_DOUBLE_WIDTH * 2);
+            __m256d vec4 = _mm256_load_pd(test->array + j + SIMD_DOUBLE_WIDTH * 3);
+            
+            vec1 = _mm256_add_pd(vec1, one_vec);
+            vec2 = _mm256_add_pd(vec2, one_vec);
+            vec3 = _mm256_add_pd(vec3, one_vec);
+            vec4 = _mm256_add_pd(vec4, one_vec);
+            
+            _mm256_store_pd(test->array + j, vec1);
+            _mm256_store_pd(test->array + j + SIMD_DOUBLE_WIDTH, vec2);
+            _mm256_store_pd(test->array + j + SIMD_DOUBLE_WIDTH * 2, vec3);
+            _mm256_store_pd(test->array + j + SIMD_DOUBLE_WIDTH * 3, vec4);
         }
     }
 }
