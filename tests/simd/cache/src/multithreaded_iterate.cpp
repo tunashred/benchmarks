@@ -105,7 +105,7 @@ INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_caching,
     AlignedArraySharedInt,
     ::testing::Combine(
-        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(ARRAY_SIZES),
         ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedInt::getTestCaseName
@@ -115,7 +115,7 @@ INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_caching,
     AlignedArraySharedLong,
     ::testing::Combine(
-        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(ARRAY_SIZES),
         ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedLong::getTestCaseName
@@ -125,7 +125,7 @@ INSTANTIATE_TEST_SUITE_P(
     simd_multithreaded_caching,
     AlignedArraySharedDouble,
     ::testing::Combine(
-        ::testing::ValuesIn(MATRIX_SIZES_ALIGNED),
+        ::testing::ValuesIn(ARRAY_SIZES),
         ::testing::ValuesIn(NUM_THREADS)
     ),
     AlignedArraySharedDouble::getTestCaseName
