@@ -182,16 +182,12 @@ TEST_P(CArraySharedDouble, ReverseJumpIterate) {
     this->runTest(reverse_jump_iterate<double>);
 }
 
-std::vector<size_t> sizes = {10, 100, 1000, 10000, 100000, 1000000, 2000000};
-
-std::vector<size_t> threads = {2, 4, 8, 14};
-
 INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     CArraySharedInt,
     ::testing::Combine(
-        ::testing::ValuesIn(sizes),
-        ::testing::ValuesIn(threads)
+        ::testing::ValuesIn(ARRAY_SIZES),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CArraySharedInt::getTestCaseName
 );
@@ -200,8 +196,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     CArraySharedLong,
     ::testing::Combine(
-        ::testing::ValuesIn(sizes),
-        ::testing::ValuesIn(threads)
+        ::testing::ValuesIn(ARRAY_SIZES),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CArraySharedLong::getTestCaseName
 );
@@ -210,8 +206,8 @@ INSTANTIATE_TEST_SUITE_P(
     multithreaded_caching,
     CArraySharedDouble,
     ::testing::Combine(
-        ::testing::ValuesIn(sizes),
-        ::testing::ValuesIn(threads)
+        ::testing::ValuesIn(ARRAY_SIZES),
+        ::testing::ValuesIn(NUM_THREADS)
     ),
     CArraySharedDouble::getTestCaseName
 );
