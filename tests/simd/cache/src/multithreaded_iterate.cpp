@@ -24,28 +24,53 @@ void AlignedArrayShared<T>::TearDown() {
     threads.clear();
 }
 
+// TODO: add scalar loops to increment the remainder of arrays
 template <>
 void sequential_iterate<int>(size_t start, size_t end, const AlignedArrayShared<int>* test) {
+    const __m256i one_vec = _mm256_set1_epi32(1);
+    const size_t unroll_end = start + ((end - start) / (SIMD_INT_WIDTH * 4)) * (SIMD_INT_WIDTH * 4);
+    
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = start; j + SIMD_INT_WIDTH <= end; j += SIMD_INT_WIDTH) {
-            __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
-    
-            __m256i result = _mm256_add_epi32(vec, _mm256_set1_epi32(1));
-    
-            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j), result);
+        for (size_t j = start; j < unroll_end; j += SIMD_INT_WIDTH * 4) {
+            __m256i vec1 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
+            __m256i vec2 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_INT_WIDTH));
+            __m256i vec3 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_INT_WIDTH * 2));
+            __m256i vec4 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_INT_WIDTH * 3));
+            
+            vec1 = _mm256_add_epi32(vec1, one_vec);
+            vec2 = _mm256_add_epi32(vec2, one_vec);
+            vec3 = _mm256_add_epi32(vec3, one_vec);
+            vec4 = _mm256_add_epi32(vec4, one_vec);
+            
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j), vec1);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_INT_WIDTH), vec2);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_INT_WIDTH * 2), vec3);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_INT_WIDTH * 3), vec4);
         }
     }
 }
 
 template <>
 void sequential_iterate<long>(size_t start, size_t end, const AlignedArrayShared<long>* test) {
+    const __m256i one_vec = _mm256_set1_epi64x(1);
+    const size_t unroll_end = start + ((end - start) / (SIMD_LONG_WIDTH * 4)) * (SIMD_LONG_WIDTH * 4);
+    
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = start; j + SIMD_LONG_WIDTH <= end; j += SIMD_LONG_WIDTH) {
-            __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
-
-            __m256i result = _mm256_add_epi64(vec, _mm256_set1_epi64x(1));
-
-            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j), result);
+        for (size_t j = start; j < unroll_end; j += SIMD_LONG_WIDTH * 4) {
+            __m256i vec1 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j));
+            __m256i vec2 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_LONG_WIDTH));
+            __m256i vec3 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_LONG_WIDTH * 2));
+            __m256i vec4 = _mm256_load_si256(reinterpret_cast<const __m256i*>(test->array + j + SIMD_LONG_WIDTH * 3));
+            
+            vec1 = _mm256_add_epi64(vec1, one_vec);
+            vec2 = _mm256_add_epi64(vec2, one_vec);
+            vec3 = _mm256_add_epi64(vec3, one_vec);
+            vec4 = _mm256_add_epi64(vec4, one_vec);
+            
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j), vec1);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_LONG_WIDTH), vec2);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_LONG_WIDTH * 2), vec3);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(test->array + j + SIMD_LONG_WIDTH * 3), vec4);
         }
     }
 }
