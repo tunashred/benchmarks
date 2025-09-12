@@ -1,4 +1,5 @@
 #include "singlecore/matrix.hpp"
+#include "utils/constants.hpp"
 #include "utils/utils.hpp"
 
 template <typename T>
@@ -76,20 +77,20 @@ TEST_P(CMatrixDouble, OptimizedMul) {
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixInt,
-    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    ::testing::Values(MATRIX_SIZES_POW2),
     CMatrixInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixLong,
-    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    ::testing::Values(MATRIX_SIZES_POW2),
     CMatrixLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixDouble,
-    ::testing::Values(512, 1024, 2048, 4096, 8192),
+    ::testing::Values(MATRIX_SIZES_POW2),
     CMatrixDouble::getTestCaseName
 );
