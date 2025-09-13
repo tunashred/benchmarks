@@ -31,7 +31,6 @@ void simd_mandelbrot_quadratic(const __m256d& z_real, const __m256d& z_im, const
 
 int scalar_diverge(double real, double im, int num_iters);
 
-// TODO: constexpr for num_iters?
 __m128i simd_diverge(__m256d c_real, __m256d c_im, const __m128i& num_iters);
 
 std::string get_mandelbrot_name(double radius);

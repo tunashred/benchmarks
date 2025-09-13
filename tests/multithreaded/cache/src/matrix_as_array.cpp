@@ -44,7 +44,7 @@ void optimized_mul(size_t startRow, size_t endRow, size_t startCol, size_t endCo
     
     for (size_t i = startRow; i < endRow; i++) {
         for (size_t k = 0; k < matrixSize; k++) {
-            T a_ik = test->matrix_A[i * matrixSize + k]; // Cache the value for better performance
+            T a_ik = test->matrix_A[i * matrixSize + k];
             for (size_t j = startCol; j < endCol; j++) {
                 test->matrix_C[i * matrixSize + j] += a_ik * test->matrix_B[k * matrixSize + j];
             }
