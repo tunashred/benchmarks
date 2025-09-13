@@ -13,6 +13,7 @@ void create_matrix(T**& matrix, size_t size) {
 
     matrix = (T**) safe_malloc(size * sizeof(T*));
 
+    // TODO: remove this
     for (size_t i = 0; i < size; i++) {
         matrix[i] = (T*) safe_malloc(rowSize);
         memset(matrix[i], 3, rowSize);

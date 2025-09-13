@@ -16,7 +16,7 @@ void AlignedMatrix<T>::SetUp() {
 
     memset(matrix_A, 3, totalSize);
     memset(matrix_B, 3, totalSize);
-    memset(matrix_C, 3, totalSize);
+    memset(matrix_C, 0, totalSize);
 }
 
 template <typename T>
@@ -94,7 +94,7 @@ void AlignedMatrix<double>::optimized_mul() {
 
                 __m256d b = _mm256_load_pd(&matrix_B[k * size + j]);
 
-                c = _mm256_add_pd(c, _mm256_mul_pd(a, b));
+                c = _mm256_fmadd_pd(a, b, c);
 
                 _mm256_store_pd(&matrix_C[i * size + j], c);
             }

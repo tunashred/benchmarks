@@ -2,6 +2,7 @@
 #include "utils/constants.hpp"
 #include "utils/utils.hpp"
 
+// TODO: make an implementation for matrix as array
 template <typename T>
 void CMatrix<T>::SetUp() {
     size_t size = this->GetParam();
@@ -33,6 +34,7 @@ void CMatrix<T>::naive_mul() {
     }
 }
 
+// TODO: unify functions between singlecore and multithreaded tests
 template <typename T>
 void CMatrix<T>::optimized_mul() {
     size_t size = this->GetParam();
@@ -77,20 +79,20 @@ TEST_P(CMatrixDouble, OptimizedMul) {
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixInt,
-    ::testing::Values(MATRIX_SIZES_POW2),
+    ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixLong,
-    ::testing::Values(MATRIX_SIZES_POW2),
+    ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
     singlecore_caching,
     CMatrixDouble,
-    ::testing::Values(MATRIX_SIZES_POW2),
+    ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixDouble::getTestCaseName
 );
