@@ -12,6 +12,10 @@ void CMatrixArrayShared<T>::SetUp() {
     ASSERT_NO_THROW(matrix_A = (T*) safe_malloc(size * size * sizeof(T)));
     ASSERT_NO_THROW(matrix_B = (T*) safe_malloc(size * size * sizeof(T)));
     ASSERT_NO_THROW(matrix_C = (T*) safe_malloc(size * size * sizeof(T)));
+
+    memset(matrix_A, 3, size);
+    memset(matrix_B, 3, size);
+    memset(matrix_C, 0, size);
 }
 
 template <typename T>
