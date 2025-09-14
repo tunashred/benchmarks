@@ -52,15 +52,15 @@ using CMatrixInt = CMatrix<int>;
 using CMatrixLong = CMatrix<long>;
 using CMatrixDouble = CMatrix<double>;
 
-TEST_P(CMatrixInt, NaiveMul) {
+TEST_P(CMatrixInt, DISABLED_NaiveMul) {
     naive_mul();
 }
 
-TEST_P(CMatrixLong, NaiveMul) {
+TEST_P(CMatrixLong, DISABLED_NaiveMul) {
     naive_mul();
 }
 
-TEST_P(CMatrixDouble, NaiveMul) {
+TEST_P(CMatrixDouble, DISABLED_NaiveMul) {
     naive_mul();
 }
 

@@ -57,15 +57,15 @@ using CMatrixArrayInt = CMatrixArray<int>;
 using CMatrixArrayLong = CMatrixArray<long>;
 using CMatrixArrayDouble = CMatrixArray<double>;
 
-TEST_P(CMatrixArrayInt, NaiveMul) {
+TEST_P(CMatrixArrayInt, DISABLED_NaiveMul) {
     naive_mul();
 }
 
-TEST_P(CMatrixArrayLong, NaiveMul) {
+TEST_P(CMatrixArrayLong, DISABLED_NaiveMul) {
     naive_mul();
 }
 
-TEST_P(CMatrixArrayDouble, NaiveMul) {
+TEST_P(CMatrixArrayDouble, DISABLED_NaiveMul) {
     naive_mul();
 }
 

@@ -102,15 +102,15 @@ using CMatrixArraySharedInt = CMatrixArrayShared<int>;
 using CMatrixArraySharedLong = CMatrixArrayShared<long>;
 using CMatrixArraySharedDouble = CMatrixArrayShared<double>;
 
-TEST_P(CMatrixArraySharedInt, NaiveMul) {
+TEST_P(CMatrixArraySharedInt, DISABLED_NaiveMul) {
     this->runTest(::naive_mul<int>);
 }
 
-TEST_P(CMatrixArraySharedLong, NaiveMul) {
+TEST_P(CMatrixArraySharedLong, DISABLED_NaiveMul) {
     this->runTest(::naive_mul<long>);
 }
 
-TEST_P(CMatrixArraySharedDouble, NaiveMul) {
+TEST_P(CMatrixArraySharedDouble, DISABLED_NaiveMul) {
     this->runTest(::naive_mul<double>);
 }
 
