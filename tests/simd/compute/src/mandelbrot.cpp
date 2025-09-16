@@ -19,7 +19,6 @@ void AlignedArrayMandelbrot::SetUp() {
     array = static_cast<int*>(std::aligned_alloc(ALIGNMENT_32, totalSize));
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << totalSize;
 
-    // warming up the memory
     memset(array, 1, totalSize);
 
     this->pixel_width         = radius * 2 / ((width < height) ? static_cast<double>(width) : static_cast<double>(height));

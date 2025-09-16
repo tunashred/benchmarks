@@ -4,7 +4,6 @@
 
 #include <thread>
 
-// ugly trick
 template <typename T>
 class AlignedArrayShared;
 

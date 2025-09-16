@@ -10,7 +10,6 @@ void CArray<T>::SetUp() {
     array = (T*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << size;
 
-    // warming up the memory
     memset(array, 1, totalSize);
 }
 

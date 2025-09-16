@@ -3,7 +3,6 @@
 #include <thread>
 #include <gtest/gtest.h>
 
-// ugly trick
 template <typename T>
 class CMatrixShared;
 

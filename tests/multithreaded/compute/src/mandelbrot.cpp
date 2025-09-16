@@ -15,8 +15,7 @@ void CArrayShared::SetUp() {
 
     array = (int*) safe_malloc(totalSize);
     ASSERT_NE(array, nullptr) << "Unable to alloc array of size " << totalSize;
-    
-    // warming up the memory
+
     memset(array, 1, totalSize);
     
     std::tie(center_coord_real, center_coord_im, radius) = mandelbrot_args;

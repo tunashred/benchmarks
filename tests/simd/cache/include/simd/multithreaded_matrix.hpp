@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-// ugly trick
 template <typename T>
 class AlignedMatrixShared;
 
