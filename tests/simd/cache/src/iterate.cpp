@@ -29,14 +29,25 @@ using AlignedArrayDouble = AlignedArray<double>;
 
 TEST_P(AlignedArrayInt, SequentialIterate) {
     size_t size = this->GetParam();
+    size_t numElems = SIMD_INT_WIDTH * 4;
+    const __m256i increment = _mm256_set1_epi32(1);
 
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = 0; j + SIMD_INT_WIDTH <= size; j += SIMD_INT_WIDTH) {
-            __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
-    
-            __m256i result = _mm256_add_epi32(vec, _mm256_set1_epi32(1));
-    
-            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j), result);
+        for (size_t j = 0; j + numElems <= size; j += numElems) {
+            __m256i vec0 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
+            __m256i vec1 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_INT_WIDTH));
+            __m256i vec2 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_INT_WIDTH * 2));
+            __m256i vec3 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_INT_WIDTH * 3));
+            
+            vec0 = _mm256_add_epi32(vec0, increment);
+            vec1 = _mm256_add_epi32(vec1, increment);
+            vec2 = _mm256_add_epi32(vec2, increment);
+            vec3 = _mm256_add_epi32(vec3, increment);
+            
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j), vec0);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_INT_WIDTH), vec1);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_INT_WIDTH * 2), vec2);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_INT_WIDTH * 3), vec3);
         }
     }
 }
@@ -69,6 +80,7 @@ TEST_P(AlignedArrayDouble, SequentialIterate) {
     }
 }
 
+// TODO: move values to a vector
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_caching,
     AlignedArrayInt,
