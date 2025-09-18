@@ -22,9 +22,10 @@ target_include_directories(${EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
 
+# target_link_options(${EXECUTABLE} PRIVATE -lprofiler)
+
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     target_link_options(${EXECUTABLE} PRIVATE -fsanitize=address)
-
     foreach(SRC_FILE IN LISTS CPP_SOURCES)
         generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE})
     endforeach()

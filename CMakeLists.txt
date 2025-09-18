@@ -49,6 +49,7 @@ endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lstdc++")
 
+# TODO: make this as a separate target and allow choosing between release or debug flags
 function(generate_assembly_for_file SRC_FILE TARGET_NAME)
     # Get file name and extension
     get_filename_component(FILE_NAME ${SRC_FILE} NAME)
