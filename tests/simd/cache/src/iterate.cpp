@@ -54,33 +54,56 @@ TEST_P(AlignedArrayInt, SequentialIterate) {
 
 TEST_P(AlignedArrayLong, SequentialIterate) {
     size_t size = this->GetParam();
+    size_t numElems = SIMD_LONG_WIDTH * 4;
+    const __m256i increment = _mm256_set1_epi64x(1);
 
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = 0; j + SIMD_LONG_WIDTH <= size; j += SIMD_LONG_WIDTH) {
-            __m256i vec = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
+        for (size_t j = 0; j + numElems <= size; j += numElems) {
+            __m256i vec0 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j));
+            __m256i vec1 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_LONG_WIDTH));
+            __m256i vec2 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_LONG_WIDTH * 2));
+            __m256i vec3 = _mm256_load_si256(reinterpret_cast<const __m256i*>(array + j + SIMD_LONG_WIDTH * 3));
 
-            __m256i result = _mm256_add_epi64(vec, _mm256_set1_epi64x(1));
+            vec0 = _mm256_add_epi64(vec0, increment);
+            vec1 = _mm256_add_epi64(vec1, increment);
+            vec2 = _mm256_add_epi64(vec2, increment);
+            vec3 = _mm256_add_epi64(vec3, increment);
 
-            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j), result);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j), vec0);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_LONG_WIDTH), vec1);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_LONG_WIDTH * 2), vec2);
+            _mm256_store_si256(reinterpret_cast<__m256i*>(array + j + SIMD_LONG_WIDTH * 3), vec3);
         }
     }
 }
 
 TEST_P(AlignedArrayDouble, SequentialIterate) {
     size_t size = this->GetParam();
+    size_t numElems = SIMD_DOUBLE_WIDTH * 4;
+    const __m256d increment = _mm256_set1_pd(1);
 
     for (size_t i = 0; i < LOOP_COUNT_200K; i++) {
-        for (size_t j = 0; j + SIMD_DOUBLE_WIDTH <= size; j += SIMD_DOUBLE_WIDTH) {
-            __m256d vec = _mm256_load_pd(array + j);
+        for (size_t j = 0; j + numElems <= size; j += numElems) {
+            __m256d vec0 = _mm256_load_pd(array + j);
+            __m256d vec1 = _mm256_load_pd(array + j + SIMD_DOUBLE_WIDTH);
+            __m256d vec2 = _mm256_load_pd(array + j + SIMD_DOUBLE_WIDTH * 2);
+            __m256d vec3 = _mm256_load_pd(array + j + SIMD_DOUBLE_WIDTH * 3);
 
-            __m256d result = _mm256_add_pd(vec, _mm256_set1_pd(1));
+            vec0 = _mm256_add_pd(vec0, increment);
+            vec1 = _mm256_add_pd(vec1, increment);
+            vec2 = _mm256_add_pd(vec2, increment);
+            vec3 = _mm256_add_pd(vec3, increment);
 
-            _mm256_store_pd(array + j, result);
+            _mm256_store_pd(array + j, vec0);
+            _mm256_store_pd(array + j + SIMD_DOUBLE_WIDTH, vec1);
+            _mm256_store_pd(array + j + SIMD_DOUBLE_WIDTH * 2, vec2);
+            _mm256_store_pd(array + j + SIMD_DOUBLE_WIDTH * 3, vec3);
         }
     }
 }
 
 // TODO: move values to a vector
+// TOOD 2: add 4'000'000
 INSTANTIATE_TEST_SUITE_P(
     simd_singlecore_caching,
     AlignedArrayInt,
