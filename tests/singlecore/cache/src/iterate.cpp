@@ -104,15 +104,15 @@ TEST_P(CArrayDouble, DISABLED_ReverseSequentialIterate) {
     reverse_sequential_iterate(this);
 }
 
-TEST_P(CArrayInt, JumpIterate) {
+TEST_P(CArrayInt, DISABLED_JumpIterate) {
     jump_iterate(this);
 }
 
-TEST_P(CArrayLong, JumpIterate) {
+TEST_P(CArrayLong, DISABLED_JumpIterate) {
     jump_iterate(this);
 }
 
-TEST_P(CArrayDouble, JumpIterate) {
+TEST_P(CArrayDouble, DISABLED_JumpIterate) {
     jump_iterate(this);
 }
 

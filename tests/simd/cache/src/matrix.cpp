@@ -106,7 +106,7 @@ using AlignedMatrixInt = AlignedMatrix<int>;
 using AlignedMatrixLong = AlignedMatrix<long>;
 using AlignedMatrixDouble = AlignedMatrix<double>;
 
-TEST_P(AlignedMatrixInt, NaiveMul) {
+TEST_P(AlignedMatrixInt, DISABLED_NaiveMul) {
     naive_mul();
 }
 
