@@ -129,21 +129,21 @@ TEST_P(CArrayDouble, DISABLED_ReverseJumpIterate) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CArrayInt,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     CArrayInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CArrayLong,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     CArrayLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CArrayDouble,
     ::testing::Values(10, 100, 1000, 10000, 100000, 1000000, 2000000, 3000000),
     CArrayDouble::getTestCaseName

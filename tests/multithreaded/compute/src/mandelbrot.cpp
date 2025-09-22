@@ -75,7 +75,7 @@ TEST_P(CArrayShared, MandelbrotQuadratic) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_compute,
+    scalar_multithreaded_compute,
     CArrayShared,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),

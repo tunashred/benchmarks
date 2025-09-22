@@ -183,7 +183,7 @@ TEST_P(CArraySharedDouble, DISABLED_ReverseJumpIterate) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    scalar_multithreaded_caching,
     CArraySharedInt,
     ::testing::Combine(
         ::testing::ValuesIn(ARRAY_SIZES),
@@ -193,7 +193,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    scalar_multithreaded_caching,
     CArraySharedLong,
     ::testing::Combine(
         ::testing::ValuesIn(ARRAY_SIZES),
@@ -202,8 +202,9 @@ INSTANTIATE_TEST_SUITE_P(
     CArraySharedLong::getTestCaseName
 );
 
+// TODO: update suite name
 INSTANTIATE_TEST_SUITE_P(
-    multithreaded_caching,
+    scalar_multithreaded_caching,
     CArraySharedDouble,
     ::testing::Combine(
         ::testing::ValuesIn(ARRAY_SIZES),

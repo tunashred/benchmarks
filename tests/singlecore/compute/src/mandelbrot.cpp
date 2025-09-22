@@ -47,7 +47,7 @@ TEST_P(CArrayMandelbrot, MandelbrotQuadratic) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_compute,
+    scalar_singlecore_compute,
     CArrayMandelbrot,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),

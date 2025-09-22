@@ -82,21 +82,21 @@ TEST_P(CMatrixArrayDouble, OptimizedMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CMatrixArrayInt,
     ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixArrayInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CMatrixArrayLong,
     ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixArrayInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_caching,
+    scalar_singlecore_caching,
     CMatrixArrayDouble,
     ::testing::ValuesIn(MATRIX_SIZES_POW2),
     CMatrixArrayInt::getTestCaseName

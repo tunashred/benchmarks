@@ -69,21 +69,21 @@ TEST_P(CArrayComputeBatchDouble, BatchMul) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_compute,
+    scalar_singlecore_compute,
     CArrayComputeBatchInt,
     ::testing::ValuesIn(small_pow2),
     CArrayComputeBatchInt::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_compute,
+    scalar_singlecore_compute,
     CArrayComputeBatchLong,
     ::testing::ValuesIn(small_pow2),
     CArrayComputeBatchLong::getTestCaseName
 );
 
 INSTANTIATE_TEST_SUITE_P(
-    singlecore_compute,
+    scalar_singlecore_compute,
     CArrayComputeBatchDouble,
     ::testing::ValuesIn(small_pow2),
     CArrayComputeBatchDouble::getTestCaseName
