@@ -129,7 +129,6 @@ include(GoogleTest)
 
 enable_testing()
 
-add_subdirectory(general)
 add_subdirectory(tests)
 
 ##################################################################
