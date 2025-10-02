@@ -36,7 +36,7 @@ constexpr std::array<std::tuple<size_t, size_t>, 4> picture_dimensions = {{
     {7680, 4320}
 }};
 
-constexpr std::array<std::tuple<double, double, double>, 5> mandelbrot_args = {{
+constexpr std::array<std::tuple<double, double, double>, 5> MANDELBROT_ARGS = {{
     //   center_x             center_y             scale
     { -0.43,                  -0.1,                1.0           }, // mandelbrot
     { -0.75 + 0.00005,        -0.02,               0.00025       }, // shells

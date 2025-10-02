@@ -20,9 +20,9 @@ get_target_property(TARGET_COMPILE_OPTIONS "${SIMD}" COMPILE_OPTIONS)
 
 message(STATUS "Compile options for ${SIMD}: ${TARGET_COMPILE_OPTIONS}")
 
-foreach(SRC_FILE IN LISTS CXX_SOURCES)
-    generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${TARGET_COMPILE_OPTIONS})
-endforeach()
+# foreach(SRC_FILE IN LISTS CXX_SOURCES)
+#     generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${TARGET_COMPILE_OPTIONS})
+# endforeach()
 
 add_subdirectory(cache)
 add_subdirectory(compute)

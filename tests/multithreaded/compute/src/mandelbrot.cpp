@@ -79,7 +79,7 @@ INSTANTIATE_TEST_SUITE_P(
     CArrayShared,
     ::testing::Combine(
         ::testing::ValuesIn(picture_dimensions),
-        ::testing::ValuesIn(mandelbrot_args),
+        ::testing::ValuesIn(MANDELBROT_ARGS),
         ::testing::ValuesIn(NUM_THREADS)),
     CArrayShared::getTestCaseName
 );
