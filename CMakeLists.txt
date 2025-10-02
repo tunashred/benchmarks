@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 
 project(benchmarks VERSION 0.1.0 LANGUAGES C CXX)
 
+set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -67,6 +68,8 @@ endif()
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lstdc++")
 
 # TODO: make this as a separate target
+# revise the TARGET_NAME necessity as argument
+# TODO 2: add a cmake flag for enabling this
 function(generate_assembly_for_file SRC_FILE TARGET_NAME FLAGS)
     get_filename_component(FILE_NAME ${SRC_FILE} NAME)
     get_filename_component(FILE_EXT ${SRC_FILE} EXT)

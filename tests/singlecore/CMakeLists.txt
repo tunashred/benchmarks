@@ -15,8 +15,12 @@ target_link_libraries(${SINGLECORE_SCALAR_LIB} PUBLIC utils)
 
 target_compile_options(${SINGLECORE_SCALAR_LIB} PUBLIC ${DISABLE_VECTORIZATION_FLAGS})
 
+get_target_property(TARGET_COMPILE_OPTIONS "${SINGLECORE_SCALAR_LIB}" COMPILE_OPTIONS)
+
+message(STATUS "Compile options for ${SINGLECORE_SCALAR_LIB}: ${TARGET_COMPILE_OPTIONS}")
+
 foreach(SRC_FILE IN LISTS CXX_SOURCES)
-    generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${RELEASE_FLAGS} ${DISABLE_VECTORIZATION_FLAGS})
+    generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${TARGET_COMPILE_OPTIONS})
 endforeach()
 
 add_subdirectory(cache)

@@ -13,30 +13,15 @@ target_include_directories(${MULTITHREADED_SCALAR_LIB} PUBLIC ${CMAKE_CURRENT_SO
 
 target_link_libraries(${MULTITHREADED_SCALAR_LIB} PUBLIC utils)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(${MULTITHREADED_SCALAR_LIB} PRIVATE
-        -fno-vectorize
-        -fno-slp-vectorize
-        -mno-sse
-        -mno-sse2
-        -mno-sse3
-        -mno-ssse3
-        -mno-sse4.1
-        -mno-sse4.2
-        -mno-avx
-        -mno-avx2
-        -mno-avx512f
-    )
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    add_compile_options(
-        -fno-tree-vectorize
-        -fno-slp-vectorize
-        -mno-sse
-        -mno-sse2
-        -mno-avx
-        -mno-avx2
-    )
-endif()
+target_compile_options(${MULTITHREADED_SCALAR_LIB} PUBLIC ${DISABLE_VECTORIZATION_FLAGS})
+
+get_target_property(TARGET_COMPILE_OPTIONS "${MULTITHREADED_SCALAR_LIB}" COMPILE_OPTIONS)
+
+message(STATUS "Compile options for ${MULTITHREADED_SCALAR_LIB}: ${TARGET_COMPILE_OPTIONS}")
+
+foreach(SRC_FILE IN LISTS CXX_SOURCES)
+    generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${TARGET_COMPILE_OPTIONS})
+endforeach()
 
 add_subdirectory(cache)
 add_subdirectory(compute)
