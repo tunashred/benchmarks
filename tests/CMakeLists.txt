@@ -1,53 +1,51 @@
-file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS 
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+file(GLOB_RECURSE CXX_SOURCES CONFIGURE_DEPENDS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS 
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.hpp
 )
 
-set(EXECUTABLE "benchmarks")
+set(EXECUTABLE_SCALAR "benchmarks_scalar")
 
-add_executable(${EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+add_executable(${EXECUTABLE_SCALAR} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${CXX_SOURCES} ${HEADERS})
 
-target_include_directories(${EXECUTABLE} PRIVATE
+target_include_directories(${EXECUTABLE_SCALAR} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/compute/include
     ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/compute/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/simd/cache/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/simd/compute/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
 
-# target_link_options(${EXECUTABLE} PRIVATE -lprofiler)
+# target_link_options(${EXECUTABLE_SCALAR} PRIVATE -lprofiler)
 
 # if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-#     target_link_options(${EXECUTABLE} PRIVATE -fsanitize=address)
+#     target_link_options(${EXECUTABLE_SCALAR} PRIVATE -fsanitize=address)
 
 #     foreach(SRC_FILE IN LISTS CPP_SOURCES)
-#         generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${DEBUG_FLAGS})
+#         generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE_SCALAR} ${DEBUG_FLAGS})
 #     endforeach()
 # elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 #     foreach(SRC_FILE IN LISTS CPP_SOURCES)
-#         generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE} ${RELEASE_FLAGS})
+#         generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE_SCALAR} ${RELEASE_FLAGS})
 #     endforeach()
 # endif()
 
 #
 # GTest
 #
-target_link_libraries(${EXECUTABLE}
-    singlecore_scalar
-    multithreaded_scalar
-    simd
-    utils
-    GTest::gtest 
-    GTest::gtest_main 
+target_link_libraries(${EXECUTABLE_SCALAR}
+    GTest::gtest
+    GTest::gtest_main
     pthread
 )
 
-gtest_discover_tests(${EXECUTABLE} DISCOVERY_TIMEOUT 10)
+gtest_discover_tests(${EXECUTABLE_SCALAR} DISCOVERY_TIMEOUT 10)
 
 add_subdirectory(singlecore)
 add_subdirectory(multithreaded)

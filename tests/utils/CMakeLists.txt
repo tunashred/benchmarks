@@ -5,8 +5,7 @@ file(GLOB CXX_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/util
 
 add_library(${UTILS_LIB} STATIC ${CXX_SOURCES} ${CXX_HEADERS})
 
-target_compile_options(${UTILS_LIB} PRIVATE -mavx
-                                            -mavx2)
+target_compile_options(${UTILS_LIB} PRIVATE)
 
 target_include_directories(${UTILS_LIB} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
