@@ -1,12 +1,14 @@
+#include "utils/utils.hpp"
+#include "utils/constants.hpp"
+
 #include <cstdint>
 #include <cstdlib>
 #include <new>
-#include <immintrin.h>
 #include <fstream>
 #include <stdexcept>
-
-#include "utils/utils.hpp"
-#include "utils/constants.hpp"
+#ifdef __AVX__
+#include <immintrin.h>
+#endif
 
 void* safe_malloc(size_t size) {
     void* memory = malloc(size);
@@ -23,14 +25,6 @@ void free_matrix(void**& matrix, size_t size) {
     free(matrix);
 }
 
-void simd_mandelbrot_quadratic(const __m256d& z_real, const __m256d& z_im, const __m256d& c_real, const __m256d& c_im,
-                               __m256d& rez_real, __m256d& rez_im) {
-    // rez_real = z_real * z_real - z_im * z_im + c_real;
-    rez_real = _mm256_add_pd(_mm256_sub_pd(_mm256_mul_pd(z_real, z_real), _mm256_mul_pd(z_im, z_im)), c_real);
-    // rez_im = 2 * z_real * z_im + c_im;
-    rez_im = _mm256_add_pd(_mm256_mul_pd(_mm256_mul_pd(z_real, _mm256_set1_pd(2)), z_im), c_im);
-}
-
 int scalar_diverge(double c_real, double c_im, int num_iters) {
     int i = 0;
     double z_real = 0, z_im = 0;
@@ -44,6 +38,15 @@ int scalar_diverge(double c_real, double c_im, int num_iters) {
         return 0;
     }
     return i;
+}
+
+#ifdef __AVX__
+void simd_mandelbrot_quadratic(const __m256d& z_real, const __m256d& z_im, const __m256d& c_real, const __m256d& c_im,
+                               __m256d& rez_real, __m256d& rez_im) {
+    // rez_real = z_real * z_real - z_im * z_im + c_real;
+    rez_real = _mm256_add_pd(_mm256_sub_pd(_mm256_mul_pd(z_real, z_real), _mm256_mul_pd(z_im, z_im)), c_real);
+    // rez_im = 2 * z_real * z_im + c_im;
+    rez_im = _mm256_add_pd(_mm256_mul_pd(_mm256_mul_pd(z_real, _mm256_set1_pd(2)), z_im), c_im);
 }
 
 __m128i simd_diverge(__m256d c_real, __m256d c_im, const __m128i& num_iters) {
@@ -69,6 +72,7 @@ __m128i simd_diverge(__m256d c_real, __m256d c_im, const __m128i& num_iters) {
 
     return i;
 }
+#endif
 
 void write_pgm(const char* filename, const int* array, size_t width, size_t height, int iter_count) {
     std::ofstream ofs(filename, std::ios::binary);

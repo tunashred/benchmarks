@@ -24,8 +24,6 @@ set(COMPILE_FLAGS
     -Wconversion
     -Wunreachable-code
     -fstack-usage
-    -march=native
-    -mtune=native
 )
 
 # TODO: Disable vectorization for scalar files
@@ -107,10 +105,11 @@ function(generate_assembly_for_file SRC_FILE TARGET_NAME FLAGS)
     get_filename_component(ASM_DIR ${ASM_FILE} DIRECTORY)
     file(MAKE_DIRECTORY ${ASM_DIR})
 
+    separate_arguments(FLAGS_LIST UNIX_COMMAND "${FLAGS}")
+
     add_custom_target(${UNIQUE_TARGET_NAME} ALL
         COMMAND ${CMAKE_CXX_COMPILER}
-            ${COMPILE_FLAGS}
-            ${FLAGS}
+            ${FLAGS_LIST}
             ${INCLUDE_FLAGS}
             -S
             -masm=intel

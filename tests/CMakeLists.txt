@@ -14,6 +14,8 @@ set(EXECUTABLE_SCALAR "benchmarks_scalar")
 
 add_executable(${EXECUTABLE_SCALAR} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${CXX_SOURCES} ${HEADERS})
 
+target_compile_options(${EXECUTABLE_SCALAR} PRIVATE ${DISABLE_VECTORIZATION_FLAGS})
+
 target_include_directories(${EXECUTABLE_SCALAR} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/cache/include
     ${CMAKE_CURRENT_SOURCE_DIR}/singlecore/compute/include
@@ -21,6 +23,12 @@ target_include_directories(${EXECUTABLE_SCALAR} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/multithreaded/compute/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/include
 )
+get_target_property(TARGET_COMPILE_OPTIONS "${EXECUTABLE_SCALAR}" COMPILE_OPTIONS)
+string(REPLACE ";" " " TARGET_COMPILE_OPTIONS_STR "${TARGET_COMPILE_OPTIONS}")
+foreach(SRC_FILE IN LISTS CXX_SOURCES)
+    generate_assembly_for_file(${SRC_FILE} ${EXECUTABLE_SCALAR} ${TARGET_COMPILE_OPTIONS_STR})
+endforeach()
+message(STATUS "Compile options for ${EXECUTABLE_SCALAR}: ${TARGET_COMPILE_OPTIONS}")
 
 # target_link_options(${EXECUTABLE_SCALAR} PRIVATE -lprofiler)
 
