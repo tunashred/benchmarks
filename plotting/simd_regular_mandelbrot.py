@@ -2,19 +2,66 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# Given data
 simd_data = {
-    "1K": {"mandelbrot": 477, "shells": 998, "seastar": 262, "stuff": 1170, "galaxy": 1376},
-    "4K": {"mandelbrot": 1926, "shells": 4010, "seastar": 1050, "stuff": 4730, "galaxy": 5542},
-    "6K": {"mandelbrot": 4303, "shells": 8877, "seastar": 2349, "stuff": 10461, "galaxy": 12264},
-    "8K": {"mandelbrot": 7620, "shells": 15755, "seastar": 4155, "stuff": 18583, "galaxy": 21778},
+    "1K": {  # 1920x1080
+        "mandelbrot": 455,
+        "shells": 946,
+        "seastar": 251,
+        "stuff": 1104,
+        "galaxy": 1302,
+    },
+    "4K": {  # 3840x2160
+        "mandelbrot": 1820,
+        "shells": 3786,
+        "seastar": 982,
+        "stuff": 4385,
+        "galaxy": 5216,
+    },
+    "6K": {  # 5760x3240
+        "mandelbrot": 4032,
+        "shells": 8443,
+        "seastar": 2242,
+        "stuff": 9983,
+        "galaxy": 11647,
+    },
+    "8K": {  # 7680x4320
+        "mandelbrot": 7218,
+        "shells": 14954,
+        "seastar": 3943,
+        "stuff": 17428,
+        "galaxy": 20599,
+    },
 }
 
 regular_data = {
-    "1K": {"mandelbrot": 17, "shells": 7143, "seastar": 602, "stuff": 7121, "galaxy": 3126},
-    "4K": {"mandelbrot": 59, "shells": 28530, "seastar": 2369, "stuff": 28521, "galaxy": 12527},
-    "6K": {"mandelbrot": 132, "shells": 65296, "seastar": 5313, "stuff": 64377, "galaxy": 28272},
-    "8K": {"mandelbrot": 239, "shells": 114358, "seastar": 9474, "stuff": 115628, "galaxy": 51102},
+    "1K": {  # 1920x1080
+        "mandelbrot": 17,
+        "shells": 17483,
+        "seastar": 1422,
+        "stuff": 17414,
+        "galaxy": 7578,
+    },
+    "4K": {  # 3840x2160
+        "mandelbrot": 68,
+        "shells": 69630,
+        "seastar": 5677,
+        "stuff": 69475,
+        "galaxy": 30232,
+    },
+    "6K": {  # 5760x3240
+        "mandelbrot": 146,
+        "shells": 156131,
+        "seastar": 12884,
+        "stuff": 156955,
+        "galaxy": 68158,
+    },
+    "8K": {  # 7680x4320
+        "mandelbrot": 259,
+        "shells": 278087,
+        "seastar": 22984,
+        "stuff": 277286,
+        "galaxy": 120818,
+    },
 }
 
 # Extract all zoom names and resolutions
